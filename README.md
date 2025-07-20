@@ -92,12 +92,13 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    P0[omp parallel for (dynamic)] --> P1[Thread t builds tour for ant i]
-    P1 --> P2[Thread‑local Δτ update]
+    P0["omp parallel for (dynamic)"] --> P1["Thread t builds tour for ant i"]
+    P1 --> P2["Thread‑local Δτ update"]
     P2 --> P3{All threads done?}
     P3 -- no --> P1
-    P3 -- yes --> P4[omp critical: merge Δτ]
-    P4 --> P5[Reduction(min): update global best]
+    P3 -- yes --> P4["omp critical: merge Δτ"]
+    P4 --> P5["Reduction(min): update global best"]
+
 ```
 
 *Note:*  The parallel version keeps the same pheromone decision rule but isolates updates via **thread‑local buffers** and uses `reduction(min:bestCost)` for the global best path.
