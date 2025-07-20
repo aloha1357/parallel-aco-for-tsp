@@ -56,6 +56,54 @@ classDiagram
 
 ---
 
+## 2.2 Algorithm Flow (Common ACO Loop)
+
+```mermaid
+flowchart TD
+    S0[Start] --> S1[Initialise pheromone matrix τ]
+    S1 --> S2[Iteration k = 1..K]
+    S2 --> S3[Construct tours]
+    S3 --> S4[Update local / global best]
+    S4 --> S5[Evaporate pheromone]
+    S5 --> S6{Stopping criteria?}
+    S6 -- no --> S2
+    S6 -- yes --> S7[Return best tour]
+    style S0 fill:#dfefff,stroke:#369
+    style S7 fill:#dfefff,stroke:#369
+```
+
+### 2.3 Strategy Micro‑flow: Serial vs. Parallel
+
+The overall loop is identical; only **Step S3 – “Construct tours”** is replaced by different micro‑flows.
+
+#### (a) Serial Construction Strategy
+
+```mermaid
+flowchart TD
+    C0[For each ant i = 1..m] --> C1[Initialise starting city]
+    C1 --> C2[Repeat until tour complete]
+    C2 --> C3[Choose next city using roulette‑wheel rule]
+    C3 --> C2
+    C2 --> C4[Store finished tour i]
+    C4 --> C5[Next i]
+```
+
+#### (b) Parallel Construction Strategy (OpenMP)
+
+```mermaid
+flowchart TD
+    P0[omp parallel for (dynamic)] --> P1[Thread t builds tour for ant i]
+    P1 --> P2[Thread‑local Δτ update]
+    P2 --> P3{All threads done?}
+    P3 -- no --> P1
+    P3 -- yes --> P4[omp critical: merge Δτ]
+    P4 --> P5[Reduction(min): update global best]
+```
+
+*Note:*  The parallel version keeps the same pheromone decision rule but isolates updates via **thread‑local buffers** and uses `reduction(min:bestCost)` for the global best path.
+
+---
+
 ## 3. Development Flow
 
 ```mermaid
