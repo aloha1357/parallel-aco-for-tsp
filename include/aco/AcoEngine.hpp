@@ -16,6 +16,7 @@
 #include "ThreadLocalPheromoneModel.hpp"
 #include "Ant.hpp"
 #include "Tour.hpp"
+#include "PerformanceMonitor.hpp"
 
 /**
  * @brief ACO algorithm parameters
@@ -49,6 +50,9 @@ struct AcoResults {
     bool converged = false;          // Whether algorithm converged to target quality
     bool early_stopped = false;      // Whether early stopping was triggered
     int stagnation_count = 0;        // Final stagnation count
+    
+    // Performance metrics
+    PerformanceMetrics performance_metrics;  // Performance monitoring data
 };
 
 class AcoEngine {
@@ -64,6 +68,10 @@ private:
     
     // Current iteration statistics
     std::vector<double> current_iteration_lengths_;
+    
+    // Performance monitoring
+    std::unique_ptr<PerformanceMonitor> performance_monitor_;
+    PerformanceBudget performance_budget_;
     
     /**
      * @brief Execute one iteration of the ACO algorithm
@@ -105,6 +113,31 @@ public:
      * @return Results containing best tour and execution statistics
      */
     AcoResults run();
+    
+    /**
+     * @brief Run ACO algorithm with performance budget constraints
+     * @param budget Performance budget to enforce
+     * @return Results containing best tour, execution statistics, and performance metrics
+     */
+    AcoResults runWithBudget(const PerformanceBudget& budget);
+    
+    /**
+     * @brief Set performance budget for monitoring
+     * @param budget Performance constraints to enforce
+     */
+    void setPerformanceBudget(const PerformanceBudget& budget);
+    
+    /**
+     * @brief Get current performance budget
+     * @return Current performance budget settings
+     */
+    const PerformanceBudget& getPerformanceBudget() const { return performance_budget_; }
+    
+    /**
+     * @brief Enable/disable performance monitoring
+     * @param enable Whether to enable performance monitoring
+     */
+    void enablePerformanceMonitoring(bool enable = true);
     
     /**
      * @brief Get current best tour

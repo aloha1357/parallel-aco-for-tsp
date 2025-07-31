@@ -15,15 +15,16 @@ cd build
 cmake .. && cmake --build . && .\unit_tests.exe
 ```
 
-**期望結果**: 應該看到 `[  PASSED  ] 72 tests.`、`[  SKIPPED ] 1 test.` ✅ 所有測試通過！
+**期望結果**: 應該看到 `[  PASSED  ] 76 tests.`、`[  SKIPPED ] 1 test.` ✅ 所有測試通過！
 
 ## 🧪 測試框架現況
 
 **✅ 已實現**: 純 GoogleTest 統一方案
-- **73 個測試**: 72 個通過 ✅ + 1 個未來功能佔位符
+- **77 個測試**: 76 個通過 ✅ + 1 個未來功能佔位符
 - **零外部依賴**: 無需 cucumber-cpp，建置更穩定
 - **BDD 風格**: 測試命名保持可讀性
 - **收斂測試**: Scenario 8 完全實現，ACO演算法可正確收斂到高品質解
+- **性能監控**: Scenario 9 完全實現，包含時間、記憶體、加速比監控 ✅ 新增
 
 ```powershell
 # 運行所有測試
@@ -31,6 +32,9 @@ cmake .. && cmake --build . && .\unit_tests.exe
 
 # 運行 BDD 場景測試
 .\unit_tests.exe --gtest_filter="BDDScenariosTest.*"
+
+# 運行 Performance Budget 測試 (✅ 全部通過)
+.\unit_tests.exe --gtest_filter="*PerformanceBudget*"
 
 # 運行 Convergence 測試 (✅ 全部通過)
 .\unit_tests.exe --gtest_filter="*Convergence*"
@@ -46,13 +50,19 @@ cmake .. && cmake --build . && .\unit_tests.exe
 - 全局最佳追蹤、迭代統計、早期停止機制完整實現
 - 所有4個收斂測試完全通過
 
-**下一個任務**: 實作 **Scenario 9 - 性能預算與最佳化**
+**✅ 已完成**: **Scenario 9 - 性能預算與最佳化** ✅ 新增
+- 完整性能監控基礎設施 (時間、記憶體、加速比、效率)
+- 平行化性能驗證與預算約束檢測
+- 合成TSP實例生成器支援多種測試模式
+- 所有4個性能預算測試完全通過
+
+**下一個任務**: 實作 **Scenario 10 - NUMA 記憶體最佳化**
 
 ```cpp
-// 需要實作性能監控和最佳化機制:
-struct PerformanceBudget; // 性能預算定義
-class PerformanceMonitor; // 性能監控器
-void optimizeForPerformance(); // 性能最佳化
+// 需要實作NUMA記憶體最佳化機制:
+class NUMAManager;           // NUMA拓撲管理
+void optimizeMemoryPlacement(); // 記憶體親和性設置
+void bindThreadsToNUMANodes(); // 線程綁定最佳化
 ```
 
 ## 🔄 BDD 開發循環
@@ -89,7 +99,7 @@ void PheromoneModel::evaporate(double rho) {
 - `AntTest.*` - 螞蟻代理功能 (3 tests)
 - `AcoEngineTest.*` - ACO 引擎 (3 tests) ✅ 完整引擎
 
-### **BDD 場景測試** (27 tests)
+### **BDD 場景測試** (31 tests)
 - `BDDScenariosTest.WalkingSkeleton_*` - 基礎驗證 (1 test)
 - `BDDScenariosTest.ConstructTour_*` - 路徑構建場景 (6 tests)
 - `BDDScenariosTest.Evaporation_*` - 費洛蒙蒸發場景 (5 tests)
@@ -97,6 +107,7 @@ void PheromoneModel::evaporate(double rho) {
 - `BDDScenariosTest.DeltaMerge_*` - 平行費洛蒙合併場景 (4 tests)
 - `BDDScenariosTest.ParallelConsistency_*` - 平行一致性場景 (4 tests)
 - `BDDScenariosTest.Convergence_*` - 演算法收斂場景 (4 tests) ✅ 全部通過
+- `BDDScenariosTest.PerformanceBudget_*` - 性能預算場景 (4 tests) ✅ 全部通過 ✅ 新增
 
 ### **未來功能佔位符** (1 skipped)
 - `BDDScenariosTest.ProbabilisticChoice_*` - 進階機率選擇佔位符

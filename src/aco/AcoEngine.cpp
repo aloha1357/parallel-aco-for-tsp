@@ -27,6 +27,9 @@ AcoEngine::AcoEngine(std::shared_ptr<Graph> graph, const AcoParameters& params)
     // Initialize pheromone matrix
     pheromones_ = std::make_shared<PheromoneModel>(graph_->size());
     
+    // Initialize performance monitoring
+    performance_monitor_ = std::make_unique<PerformanceMonitor>();
+    
     // Set OpenMP thread count
     omp_set_num_threads(params_.num_threads);
     
@@ -100,11 +103,53 @@ AcoResults AcoEngine::run() {
     auto end_time = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
     results.execution_time_ms = duration.count() / 1000.0;
+
+    return results;
+}
+
+AcoResults AcoEngine::runWithBudget(const PerformanceBudget& budget) {
+    setPerformanceBudget(budget);
+    performance_monitor_->setBudget(budget);
+    
+    // Start performance monitoring
+    performance_monitor_->startMonitoring();
+    performance_monitor_->recordCheckpoint("algorithm_start");
+    
+    // Run the standard algorithm
+    AcoResults results = run();
+    
+    // Stop monitoring and collect metrics
+    performance_monitor_->recordCheckpoint("algorithm_end");
+    performance_monitor_->stopMonitoring();
+    
+    // Add performance metrics to results
+    results.performance_metrics = performance_monitor_->getMetrics();
+    
+    // Validate budget compliance
+    bool budget_met = performance_monitor_->validateBudget();
+    if (!budget_met) {
+        auto violations = performance_monitor_->getBudgetViolations();
+        // Note: Budget violations are already recorded in performance_metrics
+    }
     
     return results;
 }
 
-double AcoEngine::executeIteration(int iteration) {
+void AcoEngine::setPerformanceBudget(const PerformanceBudget& budget) {
+    performance_budget_ = budget;
+    if (performance_monitor_) {
+        performance_monitor_->setBudget(budget);
+    }
+}
+
+void AcoEngine::enablePerformanceMonitoring(bool enable) {
+    if (enable && !performance_monitor_) {
+        performance_monitor_ = std::make_unique<PerformanceMonitor>();
+        performance_monitor_->setBudget(performance_budget_);
+    } else if (!enable) {
+        performance_monitor_.reset();
+    }
+}double AcoEngine::executeIteration(int iteration) {
     // Create thread-local pheromone delta buffers
     std::vector<ThreadLocalPheromoneModel> thread_local_deltas;
     for (int i = 0; i < params_.num_threads; ++i) {

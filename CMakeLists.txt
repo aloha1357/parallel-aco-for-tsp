@@ -73,6 +73,9 @@ set(ACO_SOURCES
     src/aco/PheromoneModel.cpp
     src/aco/ThreadLocalPheromoneModel.cpp
     src/aco/AcoEngine.cpp
+    src/aco/PerformanceMonitor.cpp
+    src/aco/SyntheticTSPGenerator.cpp
+    src/aco/StrategyComparator.cpp
     # Add more source files as they are created
 )
 
