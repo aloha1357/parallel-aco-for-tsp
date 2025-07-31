@@ -62,17 +62,19 @@ AcoResults AcoEngine::run() {
     double last_best_length = std::numeric_limits<double>::max();
     
     for (int iteration = 0; iteration < params_.max_iterations; ++iteration) {
-        double iteration_best = executeIteration();
+        double iteration_best = executeIteration(iteration);
         double iteration_avg = calculateIterationAverage();
         
-        results.iteration_best_lengths.push_back(iteration_best);
+        results.iteration_best_lengths.push_back(global_best_length_);
         results.iteration_avg_lengths.push_back(iteration_avg);
         results.actual_iterations = iteration + 1;
         
         // Check if we found a new global best
-        if (iteration_best < global_best_length_) {
+        if (iteration_best < last_best_length) {
+            global_best_length_ = iteration_best;
             results.convergence_iteration = iteration;
             stagnation_count = 0; // Reset stagnation counter
+            last_best_length = iteration_best;
         } else {
             stagnation_count++;
         }
@@ -102,7 +104,7 @@ AcoResults AcoEngine::run() {
     return results;
 }
 
-double AcoEngine::executeIteration() {
+double AcoEngine::executeIteration(int iteration) {
     // Create thread-local pheromone delta buffers
     std::vector<ThreadLocalPheromoneModel> thread_local_deltas;
     for (int i = 0; i < params_.num_threads; ++i) {
@@ -114,7 +116,7 @@ double AcoEngine::executeIteration() {
     current_iteration_lengths_.reserve(params_.num_ants);
     
     // Construct tours in parallel and collect deltas
-    double iteration_best = constructToursParallel(thread_local_deltas);
+    double iteration_best = constructToursParallel(thread_local_deltas, iteration);
     
     // Evaporate pheromones
     pheromones_->evaporate(params_.rho);
@@ -125,7 +127,7 @@ double AcoEngine::executeIteration() {
     return iteration_best;
 }
 
-double AcoEngine::constructToursParallel(std::vector<ThreadLocalPheromoneModel>& thread_local_deltas) {
+double AcoEngine::constructToursParallel(std::vector<ThreadLocalPheromoneModel>& thread_local_deltas, int iteration) {
     double iteration_best_length = std::numeric_limits<double>::max();
     std::vector<int> iteration_best_tour;
     
@@ -143,7 +145,7 @@ double AcoEngine::constructToursParallel(std::vector<ThreadLocalPheromoneModel>&
         #pragma omp for schedule(static)
         for (int ant_id = 0; ant_id < params_.num_ants; ++ant_id) {
             // Create ant with thread-specific random seed and pheromone model
-            std::mt19937 ant_rng(params_.random_seed + ant_id * 1000 + thread_id);
+            std::mt19937 ant_rng(params_.random_seed + iteration * 10000 + ant_id * 1000 + thread_id);
             Ant ant(graph_, pheromones_, &ant_rng, params_.alpha, params_.beta);
             
             // Construct tour for this ant

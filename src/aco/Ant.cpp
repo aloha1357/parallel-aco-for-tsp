@@ -117,8 +117,20 @@ int Ant::chooseNextCity() {
         return -1; // No cities available
     }
     
-    // Use roulette wheel selection
-    std::uniform_real_distribution<double> dist(0.0, 1.0);
+    // Calculate total probability for available cities only
+    double total_prob = 0.0;
+    for (int city : available_cities) {
+        total_prob += probabilities[city];
+    }
+    
+    if (total_prob <= 0.0) {
+        // Fallback: random selection if all probabilities are zero
+        std::uniform_int_distribution<int> dist(0, available_cities.size() - 1);
+        return available_cities[dist(getRNG())];
+    }
+    
+    // Use roulette wheel selection with normalized probabilities
+    std::uniform_real_distribution<double> dist(0.0, total_prob);
     double random_value = dist(getRNG());
     
     double cumulative_probability = 0.0;

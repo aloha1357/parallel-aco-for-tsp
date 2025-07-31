@@ -69,7 +69,7 @@ private:
      * @brief Execute one iteration of the ACO algorithm
      * @return Best tour length found in this iteration
      */
-    double executeIteration();
+    double executeIteration(int iteration);
     
     /**
      * @brief Calculate average tour length for current iteration
@@ -82,7 +82,7 @@ private:
      * @param thread_local_deltas Vector to store thread-local pheromone deltas
      * @return Best tour length found among all ants this iteration
      */
-    double constructToursParallel(std::vector<ThreadLocalPheromoneModel>& thread_local_deltas);
+    double constructToursParallel(std::vector<ThreadLocalPheromoneModel>& thread_local_deltas, int iteration);
     
     /**
      * @brief Update global best solution if a better one is found

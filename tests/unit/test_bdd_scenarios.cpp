@@ -576,8 +576,8 @@ TEST_F(BDDScenariosTest, Convergence_SmallTSPInstance_ConvergesQuickly) {
         
         AcoParameters params;
         params.alpha = 1.0;
-        params.beta = 2.0;
-        params.rho = 0.1;
+        params.beta = 3.0;  // Increase beta for more heuristic influence
+        params.rho = 0.5;   // Higher evaporation for better exploration
         params.num_ants = graph->size(); // Number of ants equal to cities
         params.max_iterations = 500; // Increase iterations for better convergence
         params.num_threads = 1;

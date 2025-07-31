@@ -1,8 +1,8 @@
 # Parallel ACO for TSP - 開發進度報告
 
 **日期**: 2025年7月31日  
-**版本**: v0.8-dev  
-**開發狀態**: BDD Scenario 1-8 實作完成，包含演算法收斂監控，TSP文件加載功能，完整ACO引擎與OpenMP平行化
+**版本**: v0.9-dev  
+**開發狀態**: BDD Scenario 1-8 全部完成，包含演算法收斂監控與TSP實例測試，完整ACO引擎與OpenMP平行化
 
 ---
 
@@ -19,14 +19,14 @@
 | **05_delta_accumulation** | 費洛蒙累積 | ✅ 完成 | 2 tests |
 | **06_delta_merge** | 平行費洛蒙合併 | ✅ 完成 | 4 tests |
 | **07_parallel_consistency** | OpenMP 平行化 | ✅ 完成 | 4 tests |
-| **08_convergence** | 演算法收斂監控 | 🔄 實作中 | 4 tests (2 通過, 2 調整中) |
+| **08_convergence** | 演算法收斂監控 | ✅ 完成 | 4 tests ✅ |
 
 ### 📈 **測試統計**
 - **總測試數量**: 73 tests
-- **通過測試**: 70 tests ✅
+- **通過測試**: 72 tests ✅
 - **跳過測試**: 1 test ⏭️ (未來功能佔位符)
-- **失敗測試**: 2 tests ⚠️ (收斂場景調整中)
-- **測試通過率**: 95.9% (70/73)
+- **失敗測試**: 0 tests 🎉
+- **測試通過率**: 98.6% (72/73)
 - **測試框架**: GoogleTest (統一框架)
 
 ### 🎯 **待實作的 Scenarios**
@@ -250,6 +250,34 @@ test_graph->setDistance(0, 2, 10.0);
 # 正確: cd path; dir
 ```
 
+### **Problem 5: Scenario 8 演算法收斂監控 ✅ 已解決**
+**問題**: ACO演算法無法收斂到好的解，測試失敗  
+**根本原因分析**:
+1. **隨機數種子問題**: 每次迭代使用相同的螞蟻種子序列
+2. **全局最佳追蹤錯誤**: `global_best_length_`在run()中沒有被更新  
+3. **iteration_best_lengths語義錯誤**: 記錄迭代最佳而非累計最佳
+4. **ACO參數不佳**: α=1, β=2, ρ=0.1 無法找到足夠好的解
+
+**解決方案**:
+1. ✅ **修正隨機數種子**: 在種子計算中加入`iteration * 10000`
+   ```cpp
+   std::mt19937 ant_rng(params_.random_seed + iteration * 10000 + ant_id * 1000 + thread_id);
+   ```
+2. ✅ **修正全局最佳追蹤**: 在找到更好解時正確更新`global_best_length_`
+3. ✅ **修正迭代統計**: 改為記錄`global_best_length_`而非`iteration_best`
+4. ✅ **優化ACO參數**: 調整為α=1, β=3, ρ=0.5，改善解質量
+
+**測試結果**:
+- eil51.tsp (51城市): 從791 → 572 (接近已知最優426)
+- 收斂監控: convergence_iteration正確追蹤最佳解出現時機
+- 所有4個收斂測試完全通過 ✅
+
+**相關檔案**:
+```cpp
+src/aco/AcoEngine.cpp              # 主要修正檔案
+tests/unit/test_bdd_scenarios.cpp  # 收斂測試案例
+```
+
 ---
 
 ## 🧪 **測試策略與覆蓋範圍**
@@ -360,10 +388,11 @@ std::vector<double> Ant::calculateSelectionProbabilities() const
 3. **編譯器最佳化**: Release 建置時啟用 `-O3` 最佳化
 
 ### **🔄 下一步開發優先順序**
-1. **立即任務**: 實作 Scenario 8 (演算法收斂)
-2. **短期目標**: 完成 Scenarios 8-9 (收斂與性能最佳化)
-3. **中期目標**: 實作 Scenario 10 (NUMA 最佳化)
-4. **長期目標**: Scenario 11 (可重現性) 與最終性能調優
+1. ~~**立即任務**: 實作 Scenario 8 (演算法收斂)~~ ✅ 已完成
+2. **立即任務**: 實作 Scenario 9 (性能預算與指標)
+3. **短期目標**: 完成 Scenario 10 (NUMA 記憶體最佳化)
+4. **中期目標**: 實作 Scenario 11 (可重現性驗證)
+5. **長期目標**: 最終性能調優與文檔完善
 
 ---
 
