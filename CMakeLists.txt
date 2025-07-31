@@ -98,6 +98,7 @@ if(BUILD_TESTS)
         tests/unit/test_ant.cpp
         tests/unit/test_pheromone.cpp
         tests/unit/test_engine.cpp
+        tests/steps/probabilistic_choice_steps.cpp
         # Add more test files as needed
     )
 
