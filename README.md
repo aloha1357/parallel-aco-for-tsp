@@ -92,13 +92,12 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    P0["omp parallel for (dynamic)"] --> P1["Thread t builds tour for ant i"]
-    P1 --> P2["Thread‑local Δτ update"]
+    P0[omp parallel for (dynamic)] --> P1[Thread t builds tour for ant i]
+    P1 --> P2[Thread‑local Δτ update]
     P2 --> P3{All threads done?}
     P3 -- no --> P1
-    P3 -- yes --> P4["omp critical: merge Δτ"]
-    P4 --> P5["Reduction(min): update global best"]
-
+    P3 -- yes --> P4[omp critical: merge Δτ]
+    P4 --> P5[Reduction(min): update global best]
 ```
 
 *Note:*  The parallel version keeps the same pheromone decision rule but isolates updates via **thread‑local buffers** and uses `reduction(min:bestCost)` for the global best path.
@@ -177,4 +176,98 @@ flowchart LR
 
 ---
 
-*Last updated: {{25/07/20}}*
+*Last updated: {{DATE}}*
+
+## 3. Test Strategy – Granular "Pyramid"
+
+> **Why**: Ensure each interchangeable component behaves correctly in isolation **before** validating combined behaviour in Serial/Parallel engines.
+
+### 3.1 Test Layers
+
+| Layer                        | Scope                          | Target Classes / Templates                  | Example Assertions                                 |
+| ---------------------------- | ------------------------------ | ------------------------------------------- | -------------------------------------------------- |
+| **Unit**                     | Pure functions / small classes | `Graph`, `DistanceMatrix`, `MatrixMul`      | `EXPECT_DOUBLE_EQ(distance(3,7), distance(7,3))`   |
+| **Component**                | Multiple objects interact      | `Ant`, `PheromoneModel`, `SchedulerDynamic` | Ant visits n cities once, Δτ accumulates correctly |
+| **Integration**              | Full engine (Seq / Par)        | `SerialACOEngine`, `ParallelACOEngine`      | Tour quality within 1 %, speed‑up ≥ 6×             |
+| **System / Behaviour (BDD)** | CLI + config                   | `aco --omp 8 pr1002.tsp`                    | Exit 0, CSV output, runtime threshold              |
+
+### 3.2 BDD Framework Choice
+
+* **Framework** : **cucumber‑cpp** (2025‑04) + **Google Test** backend.
+* **Scenario naming rule** : `<Layer>_<Given>_<Then>` ‑ e.g. `Integration_SerialSolveEil51_QualityWithin1pct`.
+* **Runtime dependency** : Ruby ≥ 3.0 (for Cucumber CLI). GitLab CI image will install Ruby via `apt`.
+
+### 3.3 Minimal Working Example
+
+```bash
+# features/serial_eil51.feature
+Feature: Serial engine basic correctness
+  Scenario: Integration_SerialSolveEil51_QualityWithin1pct
+    Given a TSP file "eil51.tsp"
+    When I solve it with "aco --seq"
+    Then the tour length should be within 1% of 426
+```
+
+```cpp // features/steps/serial_steps.cpp
+#include <gtest/gtest.h>
+#include "bdd_macros.hpp"
+
+GIVEN("a TSP file \"eil51.tsp\"") {
+    graph = Graph::fromFile("eil51.tsp");
+}
+WHEN("I solve it with \"aco --seq\"") {
+    SerialACOEngine eng(graph);
+    eng.run(200);
+    cost = eng.bestTour().length();
+}
+THEN("the tour length should be within 1% of 426") {
+    EXPECT_NEAR(cost, 426.0, 4.26);
+}
+```
+
+### 3.4 CMake & CI Snippets
+
+```cmake
+# CMakeLists.txt (excerpt)
+find_package(GTest REQUIRED)
+add_subdirectory(external/cucumber-cpp)
+add_executable(bdd_runner
+    features/steps/serial_steps.cpp
+    ...)
+target_link_libraries(bdd_runner
+    cucumber-cpp::cucumber gtest gtest_main pthread)
+add_test(NAME bdd COMMAND cucumber features)
+```
+
+```yaml
+# .gitlab-ci.yml (excerpt)
+stages: [build, test]
+
+image: ubuntu:24.04
+
+before_script:
+  - apt-get update && apt-get install -y build-essential cmake ruby ruby-dev git
+  - gem install cucumber --no-document
+
+build:
+  stage: build
+  script:
+    - cmake -B build -DCMAKE_CXX_STANDARD=20
+    - cmake --build build -j$(nproc)
+
+test:bdd:
+  stage: test
+  script:
+    - cd build && ctest -L bdd --output-on-failure
+```
+
+### 3.5 Test‑Execution Order
+
+1. **Unit tests** (Google Test) ‑ always run.
+2. **Component tests** (Google Test fixtures) ‑ always run.
+3. **Integration & BDD scenarios** (cucumber/cpp) ‑ run on push; mark heavy cases with `@slow` and schedule nightly.
+
+### 3.6 Coverage
+
+* Compile with `-fprofile-arcs -ftest-coverage`; use `gcov` + `lcov` to generate HTML.
+* Upload coverage artefact in GitLab Pages for reviewer access.
