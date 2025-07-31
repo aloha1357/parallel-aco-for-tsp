@@ -9,16 +9,5 @@
       "name": "openmp",
       "platform": "!osx"
     }
-  ],
-  "features": {
-    "bdd": {
-      "description": "Enable BDD testing with cucumber-cpp",
-      "dependencies": [
-        {
-          "name": "cucumber-cpp",
-          "platform": "linux"
-        }
-      ]
-    }
-  }
+  ]
 }

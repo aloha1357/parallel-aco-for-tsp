@@ -60,9 +60,10 @@ else()
     set(BUILD_TESTS ON)
 endif()
 
-# Try to find cucumber-cpp (optional for now)
+# GoogleTest is our primary testing framework
+# BDD testing is handled through descriptive unit test names
 set(BUILD_BDD_TESTS OFF)
-message(STATUS "BDD tests disabled for walking skeleton phase")
+message(STATUS "Using GoogleTest for all testing (BDD scenarios implemented as unit tests)")
 
 # Source files for the main library
 set(ACO_SOURCES
@@ -98,7 +99,8 @@ if(BUILD_TESTS)
         tests/unit/test_ant.cpp
         tests/unit/test_pheromone.cpp
         tests/unit/test_engine.cpp
-        tests/steps/probabilistic_choice_steps.cpp
+        tests/unit/test_bdd_scenarios.cpp
+        # BDD scenarios are now implemented as descriptive GoogleTest cases
         # Add more test files as needed
     )
 

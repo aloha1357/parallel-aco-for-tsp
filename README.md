@@ -1,5 +1,73 @@
 # Parallel ACO for TSP – Project Start
 <!-- # push test -->
+
+**🎯 Current Status**: BDD Scenarios 1-3 完成 | 核心 ACO 機率選擇實作完成 | 22/22 測試通過
+
+## 1. Project Goal
+
+Implement a **shared‑memory parallel Ant Colony Optimization (ACO)** solver for the Traveling‑Salesman Problem on an Intel multi‑core CPU using **OpenMP 5.1**, developed with clean OOA/OOD/OOP principles and driven by **TDD + BDD**.  The repository will be public to the teaching staff from day 0 so that progress is fully transparent.
+
+## 📊 Development Progress
+
+| BDD Scenario | Status | Features | Tests |
+|--------------|--------|----------|-------|
+| ✅ **01_walking_skeleton** | 完成 | 建置環境驗證 | 5 |
+| ✅ **02_construct_tour** | 完成 | Hamiltonian 迴路構建 | 15 |
+| ✅ **03_probabilistic_choice** | 完成 | ACO 機率選擇 (τ^α·η^β) | 22 |
+| 🔄 **04_evaporation** | 開發中 | 費洛蒙蒸發機制 | - |
+| ⏳ **05_delta_accumulation** | 待開發 | 費洛蒙累積 | - |
+| ⏳ **06_delta_merge** | 待開發 | 平行費洛蒙合併 | - |
+| ⏳ **07_parallel_consistency** | 待開發 | OpenMP 平行化 | - |
+
+## 🚀 Quick Start
+
+```powershell
+# 建置專案
+cd "d:\D_backup\2025\tum\Parallel ACO for TSP"
+mkdir build -ErrorAction SilentlyContinue
+cd build
+cmake ..
+cmake --build .
+
+# 運行測試
+.\unit_tests.exe
+
+# 執行主程式
+.\aco_main.exe
+```
+
+## 🏗️ Implemented Core Features
+
+### ✅ **Graph Representation**
+- 對稱距離矩陣 (N×N)
+- 隨機距離初始化
+- 自訂距離設置 (測試用)
+
+### ✅ **ACO Probabilistic Selection**
+- 標準 ACO 機率公式: `P(i→j) = [τ(i,j)^α · η(i,j)^β] / Σ[τ(i,k)^α · η(i,k)^β]`
+- 輪盤選擇演算法 (Roulette Wheel Selection)  
+- 參數化 α (費洛蒙重要性) 和 β (距離重要性)
+- 啟發式資訊計算 (η = 1/distance)
+
+### ✅ **Pheromone Management**
+- 費洛蒙矩陣初始化與管理
+- 費洛蒙讀取/設置操作
+- 最小費洛蒙值限制
+
+### ✅ **Tour Construction**
+- Hamiltonian 迴路構建
+- 自動路徑長度計算
+- 訪問狀態管理
+
+## 📈 Test Coverage: 22/22 (100%)
+
+```
+[==========] Running 22 tests from 6 test suites.
+[  PASSED  ] 22 tests.
+```
+
+**詳細開發報告**: 請參閱 [`DEVELOPMENT_REPORT.md`](./DEVELOPMENT_REPORT.md)allel ACO for TSP – Project Start
+<!-- # push test -->
 ## 1. Project Goal
 
 Implement a **shared‑memory parallel Ant Colony Optimization (ACO)** solver for the Traveling‑Salesman Problem on an Intel multi‑core CPU using **OpenMP 5.1**, developed with clean OOA/OOD/OOP principles and driven by **TDD + BDD**.  The repository will be public to the teaching staff from day 0 so that progress is fully transparent.
