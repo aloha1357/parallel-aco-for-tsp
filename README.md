@@ -1,5 +1,5 @@
 # Parallel ACO for TSP – Project Start
-
+# push test
 ## 1. Project Goal
 
 Implement a **shared‑memory parallel Ant Colony Optimization (ACO)** solver for the Traveling‑Salesman Problem on an Intel multi‑core CPU using **OpenMP 5.1**, developed with clean OOA/OOD/OOP principles and driven by **TDD + BDD**.  The repository will be public to the teaching staff from day 0 so that progress is fully transparent.
