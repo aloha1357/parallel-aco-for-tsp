@@ -14,11 +14,30 @@ Ant::Ant(std::shared_ptr<Graph> graph,
          double alpha, 
          double beta,
          unsigned int seed) 
-    : graph_(graph), pheromone_(pheromone), rng_(seed), 
+    : graph_(graph), pheromone_(pheromone), rng_(seed), external_rng_(nullptr),
       alpha_(alpha), beta_(beta), current_city_(0) {
     
     if (!graph) {
         throw std::invalid_argument("Graph cannot be null");
+    }
+    
+    // Initialize visited array
+    visited_.resize(graph_->size(), false);
+}
+
+Ant::Ant(std::shared_ptr<Graph> graph, 
+         std::mt19937* external_rng,
+         double alpha, 
+         double beta)
+    : graph_(graph), pheromone_(nullptr), rng_(0), external_rng_(external_rng),
+      alpha_(alpha), beta_(beta), current_city_(0) {
+    
+    if (!graph) {
+        throw std::invalid_argument("Graph cannot be null");
+    }
+    
+    if (!external_rng) {
+        throw std::invalid_argument("External RNG cannot be null");
     }
     
     // Initialize visited array
@@ -80,7 +99,7 @@ int Ant::chooseNextCity() {
     
     // Use roulette wheel selection
     std::uniform_real_distribution<double> dist(0.0, 1.0);
-    double random_value = dist(rng_);
+    double random_value = dist(getRNG());
     
     double cumulative_probability = 0.0;
     for (int city : available_cities) {
@@ -208,4 +227,8 @@ std::vector<int> Ant::constructACOTour() {
     path.push_back(0);
     
     return path;
+}
+
+std::mt19937& Ant::getRNG() {
+    return external_rng_ ? *external_rng_ : rng_;
 }

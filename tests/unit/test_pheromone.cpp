@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include "aco/PheromoneModel.hpp"
+#include "aco/ThreadLocalPheromoneModel.hpp"
 
 class PheromoneModelTest : public ::testing::Test {
 protected:
@@ -198,4 +199,87 @@ TEST_F(PheromoneModelTest, DepositInvalidInputThrows) {
         << "Zero tour length should throw";
     EXPECT_THROW(model->deposit(valid_tour, 10.0, -50.0), std::invalid_argument)
         << "Negative quality should throw";
+}
+
+// ===== Delta Merge Tests =====
+
+TEST_F(PheromoneModelTest, MergeDeltaBasicFunction) {
+    // Initialize global pheromone with base values
+    model->initialize(2.0);
+    
+    // Create thread-local delta model
+    ThreadLocalPheromoneModel delta_model(4);
+    delta_model.setDelta(0, 1, 0.5);
+    delta_model.setDelta(1, 2, 0.3);
+    delta_model.setDelta(2, 3, 0.8);
+    
+    // Merge the delta
+    model->mergeDelta(delta_model);
+    
+    // Check merged values
+    EXPECT_DOUBLE_EQ(model->getPheromone(0, 1), 2.5) << "Global + delta = 2.0 + 0.5 = 2.5";
+    EXPECT_DOUBLE_EQ(model->getPheromone(1, 2), 2.3) << "Global + delta = 2.0 + 0.3 = 2.3";
+    EXPECT_DOUBLE_EQ(model->getPheromone(2, 3), 2.8) << "Global + delta = 2.0 + 0.8 = 2.8";
+    
+    // Check unchanged values
+    EXPECT_DOUBLE_EQ(model->getPheromone(0, 2), 2.0) << "Unchanged edge should remain at base";
+    EXPECT_DOUBLE_EQ(model->getPheromone(3, 0), 2.0) << "Unchanged edge should remain at base";
+}
+
+TEST_F(PheromoneModelTest, MergeMultipleDeltas) {
+    // Initialize global pheromone with base values
+    model->initialize(1.0);
+    
+    // Create multiple thread-local delta models
+    ThreadLocalPheromoneModel delta1(4);
+    delta1.setDelta(0, 1, 0.5);
+    delta1.setDelta(1, 2, 0.3);
+    
+    ThreadLocalPheromoneModel delta2(4);
+    delta2.setDelta(0, 1, 0.2); // Overlaps with delta1
+    delta2.setDelta(2, 3, 0.4);
+    
+    std::vector<ThreadLocalPheromoneModel> deltas = {delta1, delta2};
+    
+    // Merge all deltas
+    model->mergeDeltas(deltas);
+    
+    // Check merged values
+    EXPECT_DOUBLE_EQ(model->getPheromone(0, 1), 1.7) << "Global + delta1 + delta2 = 1.0 + 0.5 + 0.2 = 1.7";
+    EXPECT_DOUBLE_EQ(model->getPheromone(1, 2), 1.3) << "Global + delta1 = 1.0 + 0.3 = 1.3";
+    EXPECT_DOUBLE_EQ(model->getPheromone(2, 3), 1.4) << "Global + delta2 = 1.0 + 0.4 = 1.4";
+    
+    // Check unchanged values
+    EXPECT_DOUBLE_EQ(model->getPheromone(0, 2), 1.0) << "Unchanged edge should remain at base";
+}
+
+TEST_F(PheromoneModelTest, MergeEmptyDeltasNoEffect) {
+    // Initialize global pheromone with specific values
+    model->setPheromone(0, 1, 3.5);
+    model->setPheromone(1, 2, 2.8);
+    model->setPheromone(2, 3, 4.2);
+    
+    // Create empty delta model (all zeros)
+    ThreadLocalPheromoneModel empty_delta(4);
+    
+    std::vector<ThreadLocalPheromoneModel> deltas = {empty_delta};
+    
+    // Merge empty deltas
+    model->mergeDeltas(deltas);
+    
+    // Check values remain unchanged
+    EXPECT_DOUBLE_EQ(model->getPheromone(0, 1), 3.5) << "Empty delta should not change values";
+    EXPECT_DOUBLE_EQ(model->getPheromone(1, 2), 2.8) << "Empty delta should not change values";
+    EXPECT_DOUBLE_EQ(model->getPheromone(2, 3), 4.2) << "Empty delta should not change values";
+}
+
+TEST_F(PheromoneModelTest, MergeIncompatibleSizeThrows) {
+    ThreadLocalPheromoneModel incompatible_delta(5); // Different size
+    
+    EXPECT_THROW(model->mergeDelta(incompatible_delta), std::invalid_argument)
+        << "Incompatible delta size should throw";
+    
+    std::vector<ThreadLocalPheromoneModel> incompatible_deltas = {incompatible_delta};
+    EXPECT_THROW(model->mergeDeltas(incompatible_deltas), std::invalid_argument)
+        << "Incompatible delta sizes should throw";
 }

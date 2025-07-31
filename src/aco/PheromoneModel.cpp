@@ -1,6 +1,8 @@
 #include "aco/PheromoneModel.hpp"
+#include "aco/ThreadLocalPheromoneModel.hpp"
 #include <stdexcept>
 #include <algorithm>
+#include <mutex>
 
 PheromoneModel::PheromoneModel(int size) : size_(size) {
     if (size <= 0) {
@@ -99,6 +101,50 @@ void PheromoneModel::deposit(const std::vector<int>& tour_path, double tour_leng
         
         // Ensure minimum pheromone level (though this should not be necessary for deposition)
         pheromone_[from][to] = std::max(new_pheromone, MIN_PHEROMONE);
+    }
+}
+
+void PheromoneModel::mergeDeltas(const std::vector<ThreadLocalPheromoneModel>& delta_models) {
+    // Thread-safe merge of multiple delta models
+    std::lock_guard<std::mutex> lock(pheromone_mutex_);
+    
+    for (const auto& delta_model : delta_models) {
+        if (delta_model.size() != size_) {
+            throw std::invalid_argument("Delta model size must match pheromone matrix size");
+        }
+        
+        // Merge each delta model
+        for (int i = 0; i < size_; ++i) {
+            for (int j = 0; j < size_; ++j) {
+                double delta = delta_model.getDelta(i, j);
+                if (delta != 0.0) {
+                    double new_value = pheromone_[i][j] + delta;
+                    // Ensure minimum pheromone level
+                    pheromone_[i][j] = std::max(new_value, MIN_PHEROMONE);
+                }
+            }
+        }
+    }
+}
+
+void PheromoneModel::mergeDelta(const ThreadLocalPheromoneModel& delta_model) {
+    // Thread-safe merge of a single delta model
+    std::lock_guard<std::mutex> lock(pheromone_mutex_);
+    
+    if (delta_model.size() != size_) {
+        throw std::invalid_argument("Delta model size must match pheromone matrix size");
+    }
+    
+    // Merge the delta model
+    for (int i = 0; i < size_; ++i) {
+        for (int j = 0; j < size_; ++j) {
+            double delta = delta_model.getDelta(i, j);
+            if (delta != 0.0) {
+                double new_value = pheromone_[i][j] + delta;
+                // Ensure minimum pheromone level
+                pheromone_[i][j] = std::max(new_value, MIN_PHEROMONE);
+            }
+        }
     }
 }
 

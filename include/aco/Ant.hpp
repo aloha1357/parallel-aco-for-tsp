@@ -22,6 +22,7 @@ private:
     std::shared_ptr<Graph> graph_;
     std::shared_ptr<PheromoneModel> pheromone_;
     std::mt19937 rng_;
+    std::mt19937* external_rng_;  // Pointer to external RNG (optional)
     
     // ACO parameters
     double alpha_;  // Pheromone importance factor
@@ -45,6 +46,18 @@ public:
         double alpha = 1.0, 
         double beta = 2.0,
         unsigned int seed = 42);
+    
+    /**
+     * @brief Constructor for Ant with external random number generator
+     * @param graph Shared pointer to the graph
+     * @param external_rng Pointer to external random number generator
+     * @param alpha Pheromone importance (default: 1.0)
+     * @param beta Heuristic importance (default: 2.0)
+     */
+    Ant(std::shared_ptr<Graph> graph, 
+        std::mt19937* external_rng,
+        double alpha = 1.0, 
+        double beta = 2.0);
     
     /**
      * @brief Construct a tour visiting all cities exactly once
@@ -88,6 +101,11 @@ public:
     void reset();
 
 private:
+    /**
+     * @brief Get reference to the random number generator in use
+     * @return Reference to either internal or external RNG
+     */
+    std::mt19937& getRNG();
     /**
      * @brief Simple greedy tour construction (fallback when no pheromone model)
      * @return Vector representing the tour path

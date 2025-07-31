@@ -9,11 +9,16 @@
 #pragma once
 
 #include <vector>
+#include <mutex>
+
+// Forward declaration
+class ThreadLocalPheromoneModel;
 
 class PheromoneModel {
 private:
     std::vector<std::vector<double>> pheromone_;
     int size_;
+    mutable std::mutex pheromone_mutex_; // For thread-safe operations
     
     static constexpr double DEFAULT_PHEROMONE = 1.0;
     static constexpr double MIN_PHEROMONE = 0.01;
@@ -63,6 +68,20 @@ public:
      * @throws std::out_of_range if tour contains invalid city indices
      */
     void deposit(const std::vector<int>& tour_path, double tour_length, double quality);
+    
+    /**
+     * @brief Merge delta pheromone from thread-local buffers to global matrix
+     * @param delta_models Vector of thread-local pheromone delta models
+     * @throws std::invalid_argument if delta models have incompatible sizes
+     */
+    void mergeDeltas(const std::vector<ThreadLocalPheromoneModel>& delta_models);
+    
+    /**
+     * @brief Thread-safe merge of a single delta model
+     * @param delta_model Thread-local pheromone delta model to merge
+     * @throws std::invalid_argument if delta model has incompatible size
+     */
+    void mergeDelta(const ThreadLocalPheromoneModel& delta_model);
     
     /**
      * @brief Get number of cities

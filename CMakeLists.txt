@@ -71,6 +71,7 @@ set(ACO_SOURCES
     src/aco/Tour.cpp
     src/aco/Ant.cpp
     src/aco/PheromoneModel.cpp
+    src/aco/ThreadLocalPheromoneModel.cpp
     src/aco/AcoEngine.cpp
     # Add more source files as they are created
 )
@@ -98,6 +99,7 @@ if(BUILD_TESTS)
         tests/unit/test_tour.cpp
         tests/unit/test_ant.cpp
         tests/unit/test_pheromone.cpp
+        tests/unit/test_thread_local_pheromone.cpp
         tests/unit/test_engine.cpp
         tests/unit/test_bdd_scenarios.cpp
         # BDD scenarios are now implemented as descriptive GoogleTest cases
