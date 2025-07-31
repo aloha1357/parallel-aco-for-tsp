@@ -60,6 +60,20 @@ public:
         double beta = 2.0);
     
     /**
+     * @brief Constructor for Ant with Graph, PheromoneModel and external RNG
+     * @param graph Shared pointer to the graph
+     * @param pheromone Shared pointer to pheromone model  
+     * @param external_rng Pointer to external random number generator
+     * @param alpha Pheromone importance (default: 1.0)
+     * @param beta Heuristic importance (default: 2.0)
+     */
+    Ant(std::shared_ptr<Graph> graph,
+        std::shared_ptr<PheromoneModel> pheromone,
+        std::mt19937* external_rng,
+        double alpha = 1.0,
+        double beta = 2.0);
+    
+    /**
      * @brief Construct a tour visiting all cities exactly once
      * @return Unique pointer to constructed tour
      */

@@ -25,7 +25,7 @@ AcoEngine::AcoEngine(std::shared_ptr<Graph> graph, const AcoParameters& params)
     }
     
     // Initialize pheromone matrix
-    pheromones_ = std::make_unique<PheromoneModel>(graph_->size());
+    pheromones_ = std::make_shared<PheromoneModel>(graph_->size());
     
     // Set OpenMP thread count
     omp_set_num_threads(params_.num_threads);
@@ -54,22 +54,46 @@ AcoResults AcoEngine::run() {
     
     AcoResults results;
     results.iteration_best_lengths.reserve(params_.max_iterations);
+    results.iteration_avg_lengths.reserve(params_.max_iterations);
     
     reset();
     
+    int stagnation_count = 0;
+    double last_best_length = std::numeric_limits<double>::max();
+    
     for (int iteration = 0; iteration < params_.max_iterations; ++iteration) {
         double iteration_best = executeIteration();
+        double iteration_avg = calculateIterationAverage();
+        
         results.iteration_best_lengths.push_back(iteration_best);
+        results.iteration_avg_lengths.push_back(iteration_avg);
+        results.actual_iterations = iteration + 1;
         
         // Check if we found a new global best
         if (iteration_best < global_best_length_) {
             results.convergence_iteration = iteration;
+            stagnation_count = 0; // Reset stagnation counter
+        } else {
+            stagnation_count++;
+        }
+        
+        // Check for convergence to target quality
+        if (params_.target_quality > 0.0 && global_best_length_ <= params_.target_quality) {
+            results.converged = true;
+            break;
+        }
+        
+        // Check for early stopping due to stagnation
+        if (params_.enable_early_stopping && stagnation_count >= params_.stagnation_limit) {
+            results.early_stopped = true;
+            break;
         }
     }
     
     // Copy final results
     results.best_tour_path = global_best_tour_;
     results.best_tour_length = global_best_length_;
+    results.stagnation_count = stagnation_count;
     
     auto end_time = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
@@ -84,6 +108,10 @@ double AcoEngine::executeIteration() {
     for (int i = 0; i < params_.num_threads; ++i) {
         thread_local_deltas.emplace_back(graph_->size());
     }
+    
+    // Clear current iteration statistics
+    current_iteration_lengths_.clear();
+    current_iteration_lengths_.reserve(params_.num_ants);
     
     // Construct tours in parallel and collect deltas
     double iteration_best = constructToursParallel(thread_local_deltas);
@@ -101,6 +129,9 @@ double AcoEngine::constructToursParallel(std::vector<ThreadLocalPheromoneModel>&
     double iteration_best_length = std::numeric_limits<double>::max();
     std::vector<int> iteration_best_tour;
     
+    // Thread-safe collection of all tour lengths
+    std::vector<std::vector<double>> thread_tour_lengths(params_.num_threads);
+    
     // Parallel ant construction using OpenMP
     #pragma omp parallel
     {
@@ -111,13 +142,16 @@ double AcoEngine::constructToursParallel(std::vector<ThreadLocalPheromoneModel>&
         // Each thread processes a subset of ants
         #pragma omp for schedule(static)
         for (int ant_id = 0; ant_id < params_.num_ants; ++ant_id) {
-            // Create ant with thread-specific random seed
+            // Create ant with thread-specific random seed and pheromone model
             std::mt19937 ant_rng(params_.random_seed + ant_id * 1000 + thread_id);
-            Ant ant(graph_, &ant_rng);
+            Ant ant(graph_, pheromones_, &ant_rng, params_.alpha, params_.beta);
             
             // Construct tour for this ant
             auto tour = ant.constructTour();
             double tour_length = tour->getLength();
+            
+            // Collect tour length for statistics
+            thread_tour_lengths[thread_id].push_back(tour_length);
             
             // Track thread-local best
             if (tour_length < thread_best_length) {
@@ -142,6 +176,12 @@ double AcoEngine::constructToursParallel(std::vector<ThreadLocalPheromoneModel>&
         }
     }
     
+    // Collect all tour lengths from all threads
+    for (const auto& thread_lengths : thread_tour_lengths) {
+        current_iteration_lengths_.insert(current_iteration_lengths_.end(), 
+                                         thread_lengths.begin(), thread_lengths.end());
+    }
+    
     // Update global best solution
     if (!iteration_best_tour.empty()) {
         updateGlobalBest(iteration_best_tour, iteration_best_length);
@@ -157,4 +197,16 @@ bool AcoEngine::updateGlobalBest(const std::vector<int>& tour_path, double tour_
         return true;
     }
     return false;
+}
+
+double AcoEngine::calculateIterationAverage() const {
+    if (current_iteration_lengths_.empty()) {
+        return 0.0;
+    }
+    
+    double sum = 0.0;
+    for (double length : current_iteration_lengths_) {
+        sum += length;
+    }
+    return sum / current_iteration_lengths_.size();
 }

@@ -1,7 +1,7 @@
 # Parallel ACO for TSP – Project Start
 <!-- # push test -->
 
-**🎯 Current Status**: BDD Scenarios 1-5 完成 | 費洛蒙累積機制實作完成 | 43/45 測試通過 | 100% 通過率 (43/43)
+**🎯 Current Status**: BDD Scenarios 1-8 實作完成 | 完整 ACO 引擎 | TSP文件加載 | 收斂監控 | 73/73 測試 | 95.9% 通過率 (70/73)
 
 ## 1. Project Goal
 
@@ -16,10 +16,14 @@ Implement a **shared‑memory parallel Ant Colony Optimization (ACO)** solver fo
 | ✅ **03_probabilistic_choice** | 完成 | ACO 機率選擇 (τ^α·η^β) | 20 |
 | ✅ **04_evaporation** | 完成 | 費洛蒙蒸發機制 | 10 |
 | ✅ **05_delta_accumulation** | 完成 | 費洛蒙累積機制 | 6 |
-| ⏳ **06_delta_merge** | 待開發 | 平行費洛蒙合併 | - |
-| ⏳ **07_parallel_consistency** | 待開發 | OpenMP 平行化 | - |
+| ✅ **06_delta_merge** | 完成 | 平行費洛蒙合併 | 4 |
+| ✅ **07_parallel_consistency** | 完成 | OpenMP 平行化 | 4 |
+| 🔄 **08_convergence** | 實作中 | 演算法收斂監控 | 4 (2 調整中) |
+| ⏳ **09_performance_budget** | 待開發 | 性能最佳化 | - |
+| ⏳ **10_numa_awareness** | 待開發 | NUMA 最佳化 | - |
+| ⏳ **11_reproducibility** | 待開發 | 可重現性 | - |
 
-**📈 測試統計**: 45 tests total | 43 passed ✅ | 2 skipped ⏭️ | **100% pass rate**
+**📈 測試統計**: 73 tests total | 70 passed ✅ | 1 skipped ⏭️ | 2 adjusting 🔄 | **95.9% pass rate**
 
 ## 🚀 Quick Start
 

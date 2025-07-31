@@ -15,12 +15,12 @@ cd build
 cmake .. && cmake --build . && .\unit_tests.exe
 ```
 
-**期望結果**: 應該看到 `[  PASSED  ] 43 tests.` 和 `[  SKIPPED ] 2 tests.`
+**期望結果**: 應該看到 `[  PASSED  ] 70 tests.`、`[  SKIPPED ] 1 test.` 和 `[  FAILED  ] 2 tests.` (Convergence調整中)
 
 ## 🧪 測試框架現況
 
 **✅ 已實現**: 純 GoogleTest 統一方案
-- **45 個測試**: 43 個通過 + 2 個未來功能佔位符
+- **73 個測試**: 70 個通過 + 1 個未來功能佔位符 + 2 個調整中
 - **零外部依賴**: 無需 cucumber-cpp，建置更穩定
 - **BDD 風格**: 測試命名保持可讀性
 
@@ -31,18 +31,22 @@ cmake .. && cmake --build . && .\unit_tests.exe
 # 運行 BDD 場景測試
 .\unit_tests.exe --gtest_filter="BDDScenariosTest.*"
 
+# 運行 Convergence 測試 (調整中)
+.\unit_tests.exe --gtest_filter="*Convergence*"
+
 # 列出所有測試
 .\unit_tests.exe --gtest_list_tests
 ```
 
 ## 🎯 當前開發重點
 
-**下一個任務**: 實作 **Scenario 6 - 平行費洛蒙合併**
+**下一個任務**: 實作 **Scenario 9 - 性能最佳化**
 
 ```cpp
-// 需要實作平行安全的費洛蒙更新機制:
-class ThreadLocalPheromoneModel; // 執行緒本地費洛蒙緩衝
-void mergeDeltas(const std::vector<ThreadLocalPheromoneModel>&); // 合併操作
+// 需要實作性能監控和最佳化機制:
+struct PerformanceBudget; // 性能預算定義
+class PerformanceMonitor; // 性能監控器
+void optimizeForPerformance(); // 性能最佳化
 ```
 
 ## 🔄 BDD 開發循環
@@ -71,22 +75,25 @@ void PheromoneModel::evaporate(double rho) {
 
 ## 📊 測試分類說明
 
-### **單元測試** (29 tests)
-- `GraphTest.*` - 圖形距離矩陣功能 (5 tests)
+### **單元測試** (49 tests)
+- `GraphTest.*` - 圖形距離矩陣功能 (7 tests) ✅ 包含TSP文件加載
 - `TourTest.*` - 路徑表示與計算 (5 tests)  
-- `PheromoneModelTest.*` - 費洛蒙操作 (15 tests) 
+- `PheromoneModelTest.*` - 費洛蒙操作 (19 tests) ✅ 完整實作
+- `ThreadLocalPheromoneModelTest.*` - 線程本地費洛蒙 (9 tests) ✅ 平行支援
 - `AntTest.*` - 螞蟻代理功能 (3 tests)
-- `AcoEngineTest.*` - ACO 引擎 (1 test)
+- `AcoEngineTest.*` - ACO 引擎 (3 tests) ✅ 完整引擎
 
-### **BDD 場景測試** (14 tests)
+### **BDD 場景測試** (23 tests)
 - `BDDScenariosTest.WalkingSkeleton_*` - 基礎驗證 (1 test)
 - `BDDScenariosTest.ConstructTour_*` - 路徑構建場景 (6 tests)
 - `BDDScenariosTest.Evaporation_*` - 費洛蒙蒸發場景 (5 tests)
 - `BDDScenariosTest.DeltaAccumulation_*` - 費洛蒙累積場景 (2 tests)
+- `BDDScenariosTest.DeltaMerge_*` - 平行費洛蒙合併場景 (4 tests)
+- `BDDScenariosTest.ParallelConsistency_*` - 平行一致性場景 (4 tests)
+- `BDDScenariosTest.Convergence_*` - 演算法收斂場景 (4 tests, 2 調整中)
 
-### **未來功能佔位符** (2 skipped)
-- `BDDScenariosTest.ProbabilisticChoice_*` - 進階機率選擇
-- `BDDScenariosTest.ParallelConsistency_*` - 平行一致性
+### **未來功能佔位符** (1 skipped)
+- `BDDScenariosTest.ProbabilisticChoice_*` - 進階機率選擇佔位符
 
 ## 📁 快速檔案導航
 

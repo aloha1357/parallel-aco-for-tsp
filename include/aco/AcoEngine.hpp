@@ -28,6 +28,11 @@ struct AcoParameters {
     int max_iterations = 100;  // Maximum number of iterations
     int num_threads = 1;       // Number of OpenMP threads
     int random_seed = 42;      // Random seed for reproducibility
+    
+    // Convergence parameters
+    bool enable_early_stopping = false;  // Enable early stopping
+    int stagnation_limit = 100;          // Iterations without improvement to trigger early stop
+    double target_quality = 0.0;         // Stop if this quality is reached (0 = disabled)
 };
 
 /**
@@ -38,13 +43,18 @@ struct AcoResults {
     double best_tour_length = 0.0;   // Length of best tour
     int convergence_iteration = -1;   // Iteration where best was found
     std::vector<double> iteration_best_lengths; // Best length per iteration
+    std::vector<double> iteration_avg_lengths;  // Average length per iteration
     double execution_time_ms = 0.0;  // Total execution time
+    int actual_iterations = 0;       // Actual iterations completed (may be less due to early stopping)
+    bool converged = false;          // Whether algorithm converged to target quality
+    bool early_stopped = false;      // Whether early stopping was triggered
+    int stagnation_count = 0;        // Final stagnation count
 };
 
 class AcoEngine {
 private:
     std::shared_ptr<Graph> graph_;
-    std::unique_ptr<PheromoneModel> pheromones_;
+    std::shared_ptr<PheromoneModel> pheromones_;
     AcoParameters params_;
     std::mt19937 rng_;
     
@@ -52,11 +62,20 @@ private:
     std::vector<int> global_best_tour_;
     double global_best_length_;
     
+    // Current iteration statistics
+    std::vector<double> current_iteration_lengths_;
+    
     /**
      * @brief Execute one iteration of the ACO algorithm
      * @return Best tour length found in this iteration
      */
     double executeIteration();
+    
+    /**
+     * @brief Calculate average tour length for current iteration
+     * @return Average tour length among all ants this iteration
+     */
+    double calculateIterationAverage() const;
     
     /**
      * @brief Construct tours for all ants in parallel

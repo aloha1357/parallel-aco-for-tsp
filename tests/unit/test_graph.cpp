@@ -41,3 +41,26 @@ TEST(GraphTest, OutOfRangeAccess) {
     EXPECT_THROW(graph.getDistance(0, 3), std::out_of_range);
     EXPECT_THROW(graph.getDistance(3, 0), std::out_of_range);
 }
+
+TEST(GraphTest, LoadFromTSPFile) {
+    // Test loading the eil51.tsp file
+    auto graph = Graph::fromTSPFile("../data/eil51.tsp");
+    
+    ASSERT_NE(graph, nullptr);
+    EXPECT_EQ(graph->size(), 51);
+    
+    // Verify distances are positive and symmetric
+    for (int i = 0; i < graph->size(); ++i) {
+        EXPECT_DOUBLE_EQ(graph->getDistance(i, i), 0.0);
+        for (int j = i + 1; j < graph->size(); ++j) {
+            double dist_ij = graph->getDistance(i, j);
+            double dist_ji = graph->getDistance(j, i);
+            EXPECT_GT(dist_ij, 0.0) << "Distance should be positive";
+            EXPECT_DOUBLE_EQ(dist_ij, dist_ji) << "Distance should be symmetric";
+        }
+    }
+}
+
+TEST(GraphTest, LoadFromInvalidTSPFile) {
+    EXPECT_THROW(Graph::fromTSPFile("nonexistent.tsp"), std::runtime_error);
+}

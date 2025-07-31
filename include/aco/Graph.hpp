@@ -10,6 +10,8 @@
 
 #include <vector>
 #include <random>
+#include <memory>
+#include <string>
 
 class Graph {
 private:
@@ -55,4 +57,21 @@ public:
      * @param distance Distance value to set
      */
     void setDistance(int from, int to, double distance);
+    
+    /**
+     * @brief Create a Graph from a TSP file
+     * @param filename Path to the TSP file
+     * @return Shared pointer to the created Graph
+     * @throws std::runtime_error if file cannot be read or parsed
+     */
+    static std::shared_ptr<Graph> fromTSPFile(const std::string& filename);
+    
+private:
+    /**
+     * @brief Calculate Euclidean distance between two points
+     * @param x1, y1 Coordinates of first point
+     * @param x2, y2 Coordinates of second point
+     * @return Euclidean distance
+     */
+    static double calculateEuclideanDistance(double x1, double y1, double x2, double y2);
 };

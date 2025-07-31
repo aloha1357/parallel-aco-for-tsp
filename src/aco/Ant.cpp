@@ -44,6 +44,26 @@ Ant::Ant(std::shared_ptr<Graph> graph,
     visited_.resize(graph_->size(), false);
 }
 
+Ant::Ant(std::shared_ptr<Graph> graph,
+         std::shared_ptr<PheromoneModel> pheromone,
+         std::mt19937* external_rng,
+         double alpha,
+         double beta)
+    : graph_(graph), pheromone_(pheromone), rng_(0), external_rng_(external_rng),
+      alpha_(alpha), beta_(beta), current_city_(0) {
+    
+    if (!graph) {
+        throw std::invalid_argument("Graph cannot be null");
+    }
+    
+    if (!external_rng) {
+        throw std::invalid_argument("External RNG cannot be null");
+    }
+    
+    // Initialize visited array
+    visited_.resize(graph_->size(), false);
+}
+
 std::unique_ptr<Tour> Ant::constructTour() {
     if (!graph_) {
         throw std::runtime_error("Graph is not available for tour construction");
