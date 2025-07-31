@@ -198,6 +198,16 @@ bool StrategyComparator::testReproducibility(const StrategyConfig& config, int s
     return true;
 }
 
+StrategyConfig StrategyComparator::getStrategyConfig(AcoStrategy strategy) {
+    auto it = strategies_.find(strategy);
+    if (it != strategies_.end()) {
+        return it->second;
+    }
+    
+    // If strategy not found, return standard strategy as default
+    return createStandardStrategy();
+}
+
 std::vector<double> StrategyComparator::testSeedConsistency(const StrategyConfig& config,
                                                           const std::vector<int>& seeds) {
     std::vector<double> results;

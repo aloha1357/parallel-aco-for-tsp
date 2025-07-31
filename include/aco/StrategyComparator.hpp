@@ -77,6 +77,9 @@ public:
     std::vector<double> testSeedConsistency(const StrategyConfig& config, 
                                           const std::vector<int>& seeds);
     
+    // Strategy access
+    StrategyConfig getStrategyConfig(AcoStrategy strategy);
+    
     // Predefined strategy factories
     static StrategyConfig createStandardStrategy();
     static StrategyConfig createExploitationStrategy();

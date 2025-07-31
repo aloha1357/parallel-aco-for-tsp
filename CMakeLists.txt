@@ -76,6 +76,7 @@ set(ACO_SOURCES
     src/aco/PerformanceMonitor.cpp
     src/aco/SyntheticTSPGenerator.cpp
     src/aco/StrategyComparator.cpp
+    src/aco/BenchmarkAnalyzer.cpp
     # Add more source files as they are created
 )
 
@@ -93,6 +94,10 @@ endif()
 # Main executable (for manual testing)
 add_executable(aco_main src/main.cpp)
 target_link_libraries(aco_main aco_lib)
+
+# Comprehensive benchmark executable
+add_executable(comprehensive_benchmark comprehensive_benchmark.cpp)
+target_link_libraries(comprehensive_benchmark aco_lib)
 
 # Unit tests (if GoogleTest is available)
 if(BUILD_TESTS)
