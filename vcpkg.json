@@ -1,0 +1,24 @@
+{
+  "name": "parallel-aco-for-tsp",
+  "version": "0.1.0",
+  "description": "Parallel Ant Colony Optimization for Traveling Salesman Problem",
+  "homepage": "https://github.com/aloha1357/parallel-aco-for-tsp",
+  "dependencies": [
+    "gtest",
+    {
+      "name": "openmp",
+      "platform": "!osx"
+    }
+  ],
+  "features": {
+    "bdd": {
+      "description": "Enable BDD testing with cucumber-cpp",
+      "dependencies": [
+        {
+          "name": "cucumber-cpp",
+          "platform": "linux"
+        }
+      ]
+    }
+  }
+}
