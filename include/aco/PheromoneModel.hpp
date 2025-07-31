@@ -48,6 +48,23 @@ public:
     void initialize(double value = DEFAULT_PHEROMONE);
     
     /**
+     * @brief Apply pheromone evaporation: τ(i,j) ← (1-ρ) · τ(i,j)
+     * @param rho Evaporation rate (0.0 ≤ ρ ≤ 1.0)
+     * @throws std::invalid_argument if rho is out of valid range
+     */
+    void evaporate(double rho);
+    
+    /**
+     * @brief Deposit pheromone along a tour path: τ(i,j) ← τ(i,j) + Δτ
+     * @param tour_path Vector of city indices representing the tour path
+     * @param tour_length Total length of the tour
+     * @param quality Quality factor Q (typically 1/tour_length or constant)
+     * @throws std::invalid_argument if tour is invalid or parameters are negative
+     * @throws std::out_of_range if tour contains invalid city indices
+     */
+    void deposit(const std::vector<int>& tour_path, double tour_length, double quality);
+    
+    /**
      * @brief Get number of cities
      * @return Size of the pheromone matrix
      */
