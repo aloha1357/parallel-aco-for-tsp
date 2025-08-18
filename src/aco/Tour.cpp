@@ -34,13 +34,12 @@ void Tour::calculateLength() {
     length_ = 0.0;
     
     // Calculate distances between consecutive cities in the path
-    for (size_t i = 0; i < path_.size() - 1; ++i) {
+    for (size_t i = 0; i + 1 < path_.size(); ++i) {
         length_ += graph_->getDistance(path_[i], path_[i + 1]);
     }
     
-    // For TSP, we need a complete cycle
-    // If the path doesn't already end at the starting city, add the return distance
-    if (path_.size() > 2 && path_.front() != path_.back()) {
+    // 關鍵：補上最後一段（封閉迴路）- TSP必須是完整循環
+    if (path_.size() >= 2) {
         length_ += graph_->getDistance(path_.back(), path_.front());
     }
 }

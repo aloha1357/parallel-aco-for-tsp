@@ -4,6 +4,7 @@
 #include <chrono>
 #include <stdexcept>
 #include <limits>
+#include <iostream>
 
 AcoEngine::AcoEngine(std::shared_ptr<Graph> graph, const AcoParameters& params)
     : graph_(graph), params_(params), rng_(params.random_seed), global_best_length_(std::numeric_limits<double>::max()) {
@@ -71,6 +72,13 @@ AcoResults AcoEngine::run() {
         results.iteration_best_lengths.push_back(global_best_length_);
         results.iteration_avg_lengths.push_back(iteration_avg);
         results.actual_iterations = iteration + 1;
+        
+        // 調試輸出：每回合的關鍵統計數據
+        if (iteration % 10 == 0 || iteration < 5 || iteration == params_.max_iterations - 1) {
+            std::cout << "iter " << iteration << ": iter_min=" << iteration_best 
+                      << "  iter_avg=" << iteration_avg 
+                      << "  global_best=" << global_best_length_ << std::endl;
+        }
         
         // Check if we found a new global best
         if (iteration_best < last_best_length) {

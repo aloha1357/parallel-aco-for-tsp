@@ -1,0 +1,52 @@
+TSPLIB 實例最優解參考
+==================================================
+
+實例: eil51
+描述: 51-city problem (Christofides/Eilon) - ~50 規模
+最優解: 426
+TSP文件: data\eil51.tsp
+最優路徑: data\eil51.opt.tour
+------------------------------
+
+實例: berlin52
+描述: 52 locations in Berlin - ~50 規模
+最優解: 7542
+TSP文件: data\berlin52.tsp
+最優路徑: data\berlin52.opt.tour
+------------------------------
+
+實例: kroA100
+描述: 100-city problem A - 100 規模
+最優解: 21282
+TSP文件: data\kroA100.tsp
+最優路徑: data\kroA100.opt.tour
+------------------------------
+
+實例: kroB100
+描述: 100-city problem B - 100 規模
+最優解: 22141
+TSP文件: data\kroB100.tsp
+最優路徑: data\kroB100.opt.tour
+------------------------------
+
+實例: kroA150
+描述: 150-city problem A - 150 規模
+最優解: 26524
+TSP文件: data\kroA150.tsp
+最優路徑: data\kroA150.opt.tour
+------------------------------
+
+實例: kroB150
+描述: 150-city problem B - 150 規模
+最優解: 26130
+TSP文件: data\kroB150.tsp
+最優路徑: data\kroB150.opt.tour
+------------------------------
+
+實例: gr202
+描述: 202-city problem - 202 規模
+最優解: 40160
+TSP文件: data\gr202.tsp
+最優路徑: data\gr202.opt.tour
+------------------------------
+

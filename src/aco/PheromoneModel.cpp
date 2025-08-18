@@ -102,6 +102,22 @@ void PheromoneModel::deposit(const std::vector<int>& tour_path, double tour_leng
         // Ensure minimum pheromone level (though this should not be necessary for deposition)
         pheromone_[from][to] = std::max(new_pheromone, MIN_PHEROMONE);
     }
+    
+    // 關鍵：補上封閉邊的費洛蒙更新（回到起點）
+    if (tour_path.size() >= 2) {
+        int last = tour_path.back();
+        int first = tour_path.front();
+        
+        // Validate city indices
+        if (last < 0 || last >= size_ || first < 0 || first >= size_) {
+            throw std::out_of_range("Tour contains invalid city index");
+        }
+        
+        // Add delta pheromone for the closing edge
+        double current_pheromone = pheromone_[last][first];
+        double new_pheromone = current_pheromone + delta_tau;
+        pheromone_[last][first] = std::max(new_pheromone, MIN_PHEROMONE);
+    }
 }
 
 void PheromoneModel::mergeDeltas(const std::vector<ThreadLocalPheromoneModel>& delta_models) {

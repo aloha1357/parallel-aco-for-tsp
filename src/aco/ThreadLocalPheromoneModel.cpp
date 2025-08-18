@@ -69,6 +69,20 @@ void ThreadLocalPheromoneModel::accumulateDelta(const std::vector<int>& tour_pat
         // Add delta pheromone to the edge
         delta_pheromone_[from][to] += delta_tau;
     }
+    
+    // 關鍵：補上封閉邊的費洛蒙更新（回到起點）
+    if (tour_path.size() >= 2) {
+        int last = tour_path.back();
+        int first = tour_path.front();
+        
+        // Validate city indices
+        if (last < 0 || last >= size_ || first < 0 || first >= size_) {
+            throw std::out_of_range("Tour contains invalid city index");
+        }
+        
+        // Add delta pheromone for the closing edge
+        delta_pheromone_[last][first] += delta_tau;
+    }
 }
 
 void ThreadLocalPheromoneModel::reset() {
