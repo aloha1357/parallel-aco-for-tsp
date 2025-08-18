@@ -963,4 +963,160 @@ void BenchmarkAnalyzer::exportDetailedScalabilityResultsCSV(
     std::cout << "詳細可擴展性結果已導出到: " << filename << std::endl;
 }
 
+void BenchmarkAnalyzer::runDetailedAverageAnalysis(
+    const std::vector<TSPBenchmark>& benchmarks,
+    int runs_per_configuration,
+    const std::string& output_prefix) {
+    
+    std::cout << "=== 開始詳細平均分析 ===" << std::endl;
+    std::cout << "測試配置: " << runs_per_configuration << " 次重複運行" << std::endl;
+    std::cout << "測試問題數量: " << benchmarks.size() << std::endl;
+    
+    std::vector<ScalabilityResult> all_scalability_results;
+    std::vector<StrategyBenchmarkResult> all_strategy_results;
+    
+    // 對每個測試問題進行詳細分析
+    for (const auto& benchmark : benchmarks) {
+        std::cout << "\n=== 分析問題: " << benchmark.name << " (" << benchmark.city_count << " 城市) ===" << std::endl;
+        
+        // 載入圖形
+        auto graph = loadTSPFile(benchmark.filename);
+        if (!graph) {
+            std::cerr << "無法載入 " << benchmark.filename << "，跳過此問題" << std::endl;
+            continue;
+        }
+        
+        // 1. 可擴展性分析 - 增加重複次數
+        std::cout << "進行可擴展性分析 (" << runs_per_configuration << " 次重複)..." << std::endl;
+        
+        std::vector<int> thread_counts = {1, 2, 4, 8};
+        for (int threads : thread_counts) {
+            std::cout << "  測試 " << threads << " 線程..." << std::flush;
+            
+            // 多次運行收集統計數據
+            std::vector<double> execution_times;
+            std::vector<double> solution_lengths;
+            std::vector<size_t> memory_usages;
+            
+            for (int run = 0; run < runs_per_configuration; ++run) {
+                auto single_result = runSingleScalabilityTest(*graph, threads);
+                execution_times.push_back(single_result.execution_time_ms);
+                solution_lengths.push_back(single_result.best_length);
+                memory_usages.push_back(single_result.memory_mb);
+                
+                if ((run + 1) % 2 == 0) {
+                    std::cout << " [" << (run + 1) << "]" << std::flush;
+                }
+            }
+            
+            // 計算統計指標
+            ScalabilityResult aggregated_result;
+            aggregated_result.thread_count = threads;
+            aggregated_result.total_runs = runs_per_configuration;
+            
+            // 執行時間統計
+            double sum_time = std::accumulate(execution_times.begin(), execution_times.end(), 0.0);
+            aggregated_result.execution_time_ms = sum_time / execution_times.size();
+            aggregated_result.min_time_ms = *std::min_element(execution_times.begin(), execution_times.end());
+            aggregated_result.max_time_ms = *std::max_element(execution_times.begin(), execution_times.end());
+            
+            // 計算時間標準差
+            double variance_time = 0.0;
+            for (double time : execution_times) {
+                variance_time += (time - aggregated_result.execution_time_ms) * (time - aggregated_result.execution_time_ms);
+            }
+            aggregated_result.std_dev_time = std::sqrt(variance_time / execution_times.size());
+            
+            // 解長度統計
+            aggregated_result.best_length = *std::min_element(solution_lengths.begin(), solution_lengths.end());
+            double sum_length = std::accumulate(solution_lengths.begin(), solution_lengths.end(), 0.0);
+            aggregated_result.avg_length = sum_length / solution_lengths.size();
+            
+            // 計算長度標準差
+            double variance_length = 0.0;
+            for (double length : solution_lengths) {
+                variance_length += (length - aggregated_result.avg_length) * (length - aggregated_result.avg_length);
+            }
+            aggregated_result.std_dev_length = std::sqrt(variance_length / solution_lengths.size());
+            
+            // 記憶體統計
+            aggregated_result.memory_mb = std::accumulate(memory_usages.begin(), memory_usages.end(), 0UL) / memory_usages.size();
+            
+            // 加速比和效率計算
+            if (threads == 1) {
+                aggregated_result.speedup = 1.0;
+                aggregated_result.efficiency = 100.0;
+            } else {
+                // 使用當前問題的單線程基準
+                auto baseline_it = std::find_if(all_scalability_results.begin(), all_scalability_results.end(),
+                    [](const ScalabilityResult& r) { return r.thread_count == 1; });
+                
+                if (baseline_it != all_scalability_results.end()) {
+                    aggregated_result.speedup = baseline_it->execution_time_ms / aggregated_result.execution_time_ms;
+                    aggregated_result.efficiency = aggregated_result.speedup / threads * 100.0;
+                } else {
+                    aggregated_result.speedup = 0.0;
+                    aggregated_result.efficiency = 0.0;
+                }
+            }
+            
+            all_scalability_results.push_back(aggregated_result);
+            
+            std::cout << " 完成" << std::endl;
+            std::cout << "    平均時間: " << std::fixed << std::setprecision(2) << aggregated_result.execution_time_ms << "ms (±" 
+                      << aggregated_result.std_dev_time << ")" << std::endl;
+            std::cout << "    最佳解: " << std::setprecision(1) << aggregated_result.best_length 
+                      << " (平均: " << aggregated_result.avg_length << ")" << std::endl;
+        }
+        
+        // 2. 策略比較分析
+        std::cout << "\n進行策略比較分析..." << std::endl;
+        
+        std::vector<AcoStrategy> strategies = {
+            AcoStrategy::Standard,
+            AcoStrategy::Aggressive, 
+            AcoStrategy::Conservative,
+            AcoStrategy::Exploration,
+            AcoStrategy::Exploitation
+        };
+        
+        for (auto strategy : strategies) {
+            std::string strategy_name = strategy_comparator_.getStrategyName(strategy);
+            std::cout << "  測試策略: " << strategy_name << "..." << std::flush;
+            
+            auto strategy_result = runStrategyBenchmark(strategy, *graph, benchmark.optimal_length, runs_per_configuration);
+            strategy_result.strategy = strategy;
+            strategy_result.strategy_name = strategy_name;
+            
+            all_strategy_results.push_back(strategy_result);
+            std::cout << " 完成" << std::endl;
+        }
+    }
+    
+    // 3. 導出詳細結果
+    std::cout << "\n=== 導出分析結果 ===" << std::endl;
+    
+    // 詳細可擴展性結果
+    std::string scalability_file = output_prefix + "_scalability_detailed.csv";
+    exportDetailedScalabilityResultsCSV(all_scalability_results, scalability_file);
+    
+    // 策略比較結果
+    std::string strategy_file = output_prefix + "_strategy_detailed.csv";
+    exportStrategyBenchmarkCSV(all_strategy_results, strategy_file);
+    
+    // 統計分析報告
+    std::string stats_file = output_prefix + "_statistical_analysis.md";
+    performStatisticalTests(all_scalability_results, stats_file);
+    
+    // 生成圖表腳本
+    generatePlotScript(scalability_file, strategy_file, output_prefix + "_plots");
+    
+    std::cout << "\n詳細平均分析完成！" << std::endl;
+    std::cout << "生成的檔案：" << std::endl;
+    std::cout << "- " << scalability_file << ": 詳細可擴展性數據" << std::endl;
+    std::cout << "- " << strategy_file << ": 詳細策略比較數據" << std::endl;
+    std::cout << "- " << stats_file << ": 統計分析報告" << std::endl;
+    std::cout << "- generate_plots.py: 圖表生成腳本" << std::endl;
+}
+
 } // namespace aco
