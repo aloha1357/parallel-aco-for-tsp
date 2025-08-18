@@ -1,0 +1,156 @@
+{
+  "experiment_name": "Four_Instances_Parallel_ACO_Comprehensive_Study",
+  "description": "針對50、100、150、202城市實例的完整平行ACO性能評估",
+  "version": "2.0",
+  "created_date": "2025-08-18",
+  
+  "test_instances": [
+    {
+      "name": "eil51",
+      "filename": "data/eil51.tsp",
+      "optimal_solution": 426,
+      "size": 51,
+      "category": "small",
+      "description": "51城市實例 (接近50城市)"
+    },
+    {
+      "name": "kroA100", 
+      "filename": "data/kroA100.tsp",
+      "optimal_solution": 21282,
+      "size": 100,
+      "category": "medium",
+      "description": "100城市Krolak問題A"
+    },
+    {
+      "name": "kroA150",
+      "filename": "data/kroA150.tsp", 
+      "optimal_solution": 26524,
+      "size": 150,
+      "category": "large",
+      "description": "150城市Krolak問題A"
+    },
+    {
+      "name": "gr202",
+      "filename": "data/gr202.tsp",
+      "optimal_solution": 40160,
+      "size": 202,
+      "category": "extra_large",
+      "description": "202城市地理實例"
+    }
+  ],
+  
+  "thread_configurations": [1, 2, 4, 8],
+  
+  "aco_parameters": {
+    "alpha": 1.0,
+    "beta": 2.0,
+    "rho": 0.1,
+    "q0": 0.9,
+    "num_ants": 50,
+    "comment": "標準ACO參數設定"
+  },
+  
+  "experiments": {
+    "experiment_1": {
+      "name": "fixed_iterations",
+      "description": "固定迭代數實驗 - 比較相同迭代資源下的解品質",
+      "settings": {
+        "max_iterations": 100,
+        "runs_per_configuration": 100,
+        "timeout_seconds": null,
+        "comment": "每個配置重複100次以獲得統計顯著性"
+      },
+      "metrics": [
+        "tour_length",
+        "ratio_to_best", 
+        "wall_time_s",
+        "convergence_iteration",
+        "speedup_ratio",
+        "efficiency"
+      ]
+    },
+    
+    "experiment_2": {
+      "name": "time_budget",
+      "description": "固定時間預算實驗 - 比較相同時間下的解品質",
+      "settings": {
+        "baseline_measurement": {
+          "description": "先測量1thread 100iteration的執行時間作為基準",
+          "baseline_threads": 1,
+          "baseline_iterations": 100,
+          "measurement_runs": 5
+        },
+        "time_budget_calculation": {
+          "description": "使用基準時間作為各thread數的時間預算",
+          "use_baseline_time": true,
+          "manual_budgets": {
+            "eil51": 0.5,
+            "kroA100": 2.0,
+            "kroA150": 5.0,
+            "gr202": 10.0
+          }
+        },
+        "runs_per_configuration": 100,
+        "max_iterations_limit": 1000,
+        "comment": "所有配置都使用相同的時間預算，嘗試100次"
+      },
+      "metrics": [
+        "tour_length",
+        "ratio_to_best",
+        "actual_iterations",
+        "time_budget_s",
+        "wall_time_s",
+        "iterations_per_second",
+        "speedup_ratio",
+        "efficiency"
+      ]
+    }
+  },
+  
+  "development_settings": {
+    "quick_test_mode": {
+      "enabled": true,
+      "max_iterations": 2,
+      "runs_per_configuration": 5,
+      "description": "快速測試模式用於驗證實驗設定"
+    }
+  },
+  
+  "output_settings": {
+    "base_directory": "experiment/results",
+    "csv_format": true,
+    "json_summary": true,
+    "generate_plots": true,
+    "plot_formats": ["png", "pdf"],
+    "real_time_progress": true
+  },
+  
+  "analysis_settings": {
+    "statistical_analysis": {
+      "confidence_level": 0.95,
+      "significance_level": 0.05,
+      "tests": ["t_test", "anova", "wilcoxon"]
+    },
+    "performance_metrics": {
+      "speedup_calculation": "parallel_time / serial_time",
+      "efficiency_calculation": "speedup / num_threads", 
+      "success_threshold": 1.1,
+      "quality_threshold": 1.05
+    },
+    "report_generation": {
+      "summary_statistics": true,
+      "convergence_plots": true,
+      "performance_comparison": true,
+      "thread_scaling_analysis": true
+    }
+  },
+  
+  "hardware_environment": {
+    "note": "請記錄實際執行環境",
+    "cpu_info": "請填寫實際CPU型號",
+    "memory_gb": "請填寫實際記憶體容量",
+    "os": "Windows",
+    "compiler": "MSVC/GCC",
+    "optimization_flags": "-O3"
+  }
+}

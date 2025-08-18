@@ -1,0 +1,136 @@
+{
+  "experiment_settings": {
+    "development_mode": {
+      "max_iterations": 2,
+      "num_runs": 5,
+      "description": "Quick test mode for TDD/BDD development"
+    },
+    "production_mode": {
+      "max_iterations": 100,
+      "num_runs": 30,
+      "description": "Full experiment mode"
+    },
+    "current_mode": "development_mode"
+  },
+  
+  "tsp_instances": {
+    "small_scale": {
+      "size_range": "50",
+      "instances": [
+        {
+          "name": "eil51",
+          "file": "data/eil51.tsp",
+          "optimal_solution": 426,
+          "description": "51-city instance"
+        }
+      ]
+    },
+    "medium_scale": {
+      "size_range": "100", 
+      "instances": [
+        {
+          "name": "kroA100",
+          "file": "data/kroA100.tsp",
+          "optimal_solution": 21282,
+          "description": "100-city instance"
+        }
+      ]
+    },
+    "large_scale": {
+      "size_range": "150",
+      "instances": [
+        {
+          "name": "kroA150",
+          "file": "data/kroA150.tsp",
+          "optimal_solution": 26524,
+          "description": "150-city instance"
+        }
+      ]
+    },
+    "xlarge_scale": {
+      "size_range": "200",
+      "instances": [
+        {
+          "name": "gr202",
+          "file": "data/gr202.tsp",
+          "optimal_solution": 40160,
+          "description": "202-city instance"
+        }
+      ]
+    }
+  },
+
+  "algorithms": {
+    "serial_aco": {
+      "name": "Serial ACO",
+      "num_threads": 1,
+      "alpha": 1.0,
+      "beta": 2.0,
+      "rho": 0.1,
+      "num_ants": 50
+    },
+    "parallel_aco_2": {
+      "name": "Parallel ACO (2 threads)",
+      "num_threads": 2,
+      "alpha": 1.0,
+      "beta": 2.0,
+      "rho": 0.1,
+      "num_ants": 50
+    },
+    "parallel_aco_4": {
+      "name": "Parallel ACO (4 threads)",
+      "num_threads": 4,
+      "alpha": 1.0,
+      "beta": 2.0,
+      "rho": 0.1,
+      "num_ants": 50
+    },
+    "parallel_aco_8": {
+      "name": "Parallel ACO (8 threads)",
+      "num_threads": 8,
+      "alpha": 1.0,
+      "beta": 2.0,
+      "rho": 0.1,
+      "num_ants": 50
+    }
+  },
+
+  "experiment_1_fixed_iterations": {
+    "description": "Compare serial vs parallel ACO with fixed iterations",
+    "output_directory": "results/fixed_iterations",
+    "csv_filename": "fixed_iterations_results.csv"
+  },
+
+  "experiment_2_time_budget": {
+    "description": "Compare serial vs parallel ACO with fixed time budget",
+    "time_budgets": {
+      "eil51": 0.20,
+      "kroA100": 0.65,
+      "kroA150": 1.40,
+      "gr202": 2.50
+    },
+    "max_iterations": 1000,
+    "output_directory": "results/time_budget", 
+    "csv_filename": "time_budget_results.csv"
+  },
+
+  "output_format": {
+    "csv_columns": [
+      "timestamp",
+      "experiment_type",
+      "algorithm", 
+      "instance_name",
+      "run_number",
+      "max_iterations",
+      "actual_iterations", 
+      "time_budget_s",
+      "wall_time_s",
+      "tour_length",
+      "optimal_solution",
+      "ratio_to_best",
+      "num_threads",
+      "convergence_iteration",
+      "random_seed"
+    ]
+  }
+}

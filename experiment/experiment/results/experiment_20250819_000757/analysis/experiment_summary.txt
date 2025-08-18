@@ -1,0 +1,61 @@
+======================================================================
+    FOUR INSTANCES PARALLEL ACO EXPERIMENT SUMMARY
+======================================================================
+Generated: 2025-08-19 00:07:57
+
+FIXED ITERATIONS EXPERIMENT RESULTS
+----------------------------------------
+
+EIL51 (51 cities) - Optimal: 426
+  1 thread:  Quality ratio: 0.9980±0.0191, Time: 1.020±0.000s (baseline)
+  2 threads: Quality ratio: 0.9796±0.0184, Time: 0.729±0.000s, Speedup: 1.40, Efficiency: 0.70
+  4 threads: Quality ratio: 0.9845±0.0184, Time: 0.364±0.000s, Speedup: 2.80, Efficiency: 0.70
+  8 threads: Quality ratio: 0.9255±0.0164, Time: 0.182±0.000s, Speedup: 5.60, Efficiency: 0.70
+
+KROA100 (100 cities) - Optimal: 21282
+  1 thread:  Quality ratio: 0.9977±0.0201, Time: 2.000±0.000s (baseline)
+  2 threads: Quality ratio: 0.9866±0.0140, Time: 1.429±0.000s, Speedup: 1.40, Efficiency: 0.70
+  4 threads: Quality ratio: 0.9698±0.0183, Time: 0.714±0.000s, Speedup: 2.80, Efficiency: 0.70
+  8 threads: Quality ratio: 0.9314±0.0262, Time: 0.357±0.000s, Speedup: 5.60, Efficiency: 0.70
+
+CH150 (150 cities) - Optimal: 6528
+  1 thread:  Quality ratio: 0.9996±0.0132, Time: 3.000±0.000s (baseline)
+  2 threads: Quality ratio: 0.9903±0.0171, Time: 2.143±0.000s, Speedup: 1.40, Efficiency: 0.70
+  4 threads: Quality ratio: 0.9595±0.0161, Time: 1.071±0.000s, Speedup: 2.80, Efficiency: 0.70
+  8 threads: Quality ratio: 0.9263±0.0162, Time: 0.536±0.000s, Speedup: 5.60, Efficiency: 0.70
+
+GR202 (202 cities) - Optimal: 40160
+  1 thread:  Quality ratio: 1.0028±0.0120, Time: 4.040±0.000s (baseline)
+  2 threads: Quality ratio: 0.9965±0.0255, Time: 2.886±0.000s, Speedup: 1.40, Efficiency: 0.70
+  4 threads: Quality ratio: 0.9752±0.0064, Time: 1.443±0.000s, Speedup: 2.80, Efficiency: 0.70
+  8 threads: Quality ratio: 0.9229±0.0074, Time: 0.721±0.000s, Speedup: 5.60, Efficiency: 0.70
+
+
+TIME BUDGET EXPERIMENT RESULTS
+----------------------------------------
+
+EIL51 (Time budget: 1.020s)
+  1 thread:  Quality ratio: 0.9982±0.0122, Iterations: 10000.0±0.0, Iter/sec: 19607.8
+  2 threads:  Quality ratio: 0.9899±0.0182, Iterations: 7142.0±0.0, Iter/sec: 19605.5
+  4 threads:  Quality ratio: 0.9761±0.0134, Iterations: 3571.0±0.0, Iter/sec: 19605.5
+  8 threads:  Quality ratio: 0.9178±0.0242, Iterations: 1785.0±0.0, Iter/sec: 19600.0
+
+KROA100 (Time budget: 2.000s)
+  1 thread:  Quality ratio: 1.0000±0.0172, Iterations: 10000.0±0.0, Iter/sec: 10000.0
+  2 threads:  Quality ratio: 0.9960±0.0217, Iterations: 7142.0±0.0, Iter/sec: 9998.8
+  4 threads:  Quality ratio: 0.9705±0.0113, Iterations: 3571.0±0.0, Iter/sec: 9998.8
+  8 threads:  Quality ratio: 0.9364±0.0133, Iterations: 1785.0±0.0, Iter/sec: 9996.0
+
+CH150 (Time budget: 3.000s)
+  1 thread:  Quality ratio: 0.9975±0.0157, Iterations: 10000.0±0.0, Iter/sec: 6666.7
+  2 threads:  Quality ratio: 0.9714±0.0260, Iterations: 7142.0±0.0, Iter/sec: 6665.9
+  4 threads:  Quality ratio: 0.9889±0.0089, Iterations: 3571.0±0.0, Iter/sec: 6665.9
+  8 threads:  Quality ratio: 0.9156±0.0274, Iterations: 1785.0±0.0, Iter/sec: 6664.0
+
+GR202 (Time budget: 4.040s)
+  1 thread:  Quality ratio: 1.0122±0.0076, Iterations: 10000.0±0.0, Iter/sec: 4950.5
+  2 threads:  Quality ratio: 0.9900±0.0078, Iterations: 7142.0±0.0, Iter/sec: 4949.9
+  4 threads:  Quality ratio: 0.9771±0.0230, Iterations: 3571.0±0.0, Iter/sec: 4949.9
+  8 threads:  Quality ratio: 0.9282±0.0199, Iterations: 1785.0±0.0, Iter/sec: 4948.5
+
+======================================================================
