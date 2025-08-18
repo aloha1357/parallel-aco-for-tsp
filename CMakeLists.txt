@@ -220,18 +220,19 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT MSVC)
 endif()
 
 # Comprehensive ACO Experiment
-add_executable(comprehensive_aco_experiment 
-    experiment/comprehensive_aco_experiment.cpp
-)
-target_link_libraries(comprehensive_aco_experiment 
-    aco_lib 
-    ${OpenMP_CXX_LIBRARIES}
-)
-target_include_directories(comprehensive_aco_experiment PRIVATE 
-    ${PROJECT_SOURCE_DIR}/include
-)
+add_executable(comprehensive_experiment_runner experiment/comprehensive_aco_experiment.cpp)
+target_link_libraries(comprehensive_experiment_runner aco_lib)
+target_include_directories(comprehensive_experiment_runner PRIVATE include)
 
-# Install targets
+# Optimized ACO Experiment (no verbose output)
+add_executable(optimized_aco_experiment experiment/optimized_aco_experiment.cpp)
+target_link_libraries(optimized_aco_experiment aco_lib)
+target_include_directories(optimized_aco_experiment PRIVATE include)
+
+# Quick ACO Experiment (fast scalability test)
+add_executable(quick_aco_experiment experiment/quick_aco_experiment.cpp)
+target_link_libraries(quick_aco_experiment aco_lib)
+target_include_directories(quick_aco_experiment PRIVATE include)# Install targets
 install(TARGETS aco_lib DESTINATION lib)
 install(DIRECTORY include/ DESTINATION include)
 
