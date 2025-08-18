@@ -112,6 +112,18 @@ target_link_libraries(quick_average_test aco_lib)
 add_executable(test_tsplib_reader test_tsplib_reader.cpp)
 target_link_libraries(test_tsplib_reader aco_lib)
 
+# Thread performance comparison executable
+add_executable(thread_performance_comparison thread_performance_comparison.cpp)
+target_link_libraries(thread_performance_comparison aco_lib)
+
+# Simple thread performance comparison executable  
+add_executable(simple_thread_comparison simple_thread_comparison.cpp)
+target_link_libraries(simple_thread_comparison aco_lib)
+
+# Comprehensive experiment runner
+add_executable(comprehensive_experiment_runner comprehensive_experiment_runner.cpp)
+target_link_libraries(comprehensive_experiment_runner aco_lib)
+
 # TSPLIB standard experiment executable - temporarily disabled
 # add_executable(tsplib_benchmark_experiment tsplib_benchmark_experiment.cpp)
 # target_link_libraries(tsplib_benchmark_experiment aco_lib)
