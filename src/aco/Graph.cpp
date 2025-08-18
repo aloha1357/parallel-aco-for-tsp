@@ -1,4 +1,5 @@
 #include "aco/Graph.hpp"
+#include "aco/DistanceCalculator.hpp"
 #include <stdexcept>
 #include <algorithm>
 #include <fstream>
@@ -9,37 +10,9 @@
 #include <functional>
 #include <iostream>
 
-// TSPLIB distance calculation functions
-namespace {
-    // EUC_2D: Euclidean distance rounded to nearest integer
-    inline int dist_euc_2d(double x1, double y1, double x2, double y2) {
-        double d = std::hypot(x2 - x1, y2 - y1);
-        return static_cast<int>(std::lround(d));
-    }
-    
-    // CEIL_2D: Euclidean distance rounded up
-    inline int dist_ceil_2d(double x1, double y1, double x2, double y2) {
-        double d = std::hypot(x2 - x1, y2 - y1);
-        return static_cast<int>(std::ceil(d));
-    }
-    
-    // ATT: Pseudo-Euclidean distance (for kroA series)
-    inline int dist_att(double x1, double y1, double x2, double y2) {
-        double rij = std::sqrt(((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)) / 10.0);
-        int tij = static_cast<int>(std::lround(rij));
-        return (tij < rij) ? (tij + 1) : tij;
-    }
-    
-    // GEO: Geographical distance (for some instances)
-    inline int dist_geo(double x1, double y1, double x2, double y2) {
-        // Convert to radians and calculate geographical distance
-        // This is more complex, implement if needed for specific instances
-        double d = std::hypot(x2 - x1, y2 - y1);
-        return static_cast<int>(std::lround(d));
-    }
-}
+// TDD-based distance calculation system is now in DistanceCalculator.cpp
 
-Graph::Graph(int size) : size_(size) {
+Graph::Graph(int size) : size_(size), distance_type_("RANDOM"), distance_calculator_(nullptr) {
     if (size <= 0) {
         throw std::invalid_argument("Graph size must be positive");
     }
@@ -122,25 +95,22 @@ std::shared_ptr<Graph> Graph::fromTSPFile(const std::string& filename) {
         throw std::runtime_error("Invalid or missing DIMENSION in TSP file");
     }
     
-    // 支持多種 TSPLIB 距離類型
-    std::function<int(double,double,double,double)> distance_func;
-    
-    if (edge_weight_type == "EUC_2D") {
-        distance_func = dist_euc_2d;
-        std::cout << "Loading TSP with EUC_2D distance (rounded Euclidean)" << std::endl;
-    } else if (edge_weight_type == "CEIL_2D") {
-        distance_func = dist_ceil_2d;
-        std::cout << "Loading TSP with CEIL_2D distance (ceiling Euclidean)" << std::endl;
-    } else if (edge_weight_type == "ATT") {
-        distance_func = dist_att;
-        std::cout << "Loading TSP with ATT distance (pseudo-Euclidean)" << std::endl;
-    } else if (edge_weight_type == "GEO") {
-        distance_func = dist_geo;
-        std::cout << "Loading TSP with GEO distance (geographical)" << std::endl;
-    } else {
+    // Create TDD-based distance calculator
+    auto distance_calculator = DistanceCalculatorFactory::create(edge_weight_type);
+    if (!distance_calculator) {
         throw std::runtime_error("Unsupported EDGE_WEIGHT_TYPE: " + edge_weight_type + 
-                                 " (supported: EUC_2D, CEIL_2D, ATT, GEO)");
+                                 " (supported: " + []{
+                                     std::string types;
+                                     auto supported = DistanceCalculatorFactory::getSupportedTypes();
+                                     for (size_t i = 0; i < supported.size(); ++i) {
+                                         if (i > 0) types += ", ";
+                                         types += supported[i];
+                                     }
+                                     return types;
+                                 }() + ")");
     }
+    
+    std::cout << "Loading TSP with " << edge_weight_type << " distance calculator" << std::endl;
     
     // Parse coordinates
     coordinates.resize(dimension);
@@ -162,30 +132,37 @@ std::shared_ptr<Graph> Graph::fromTSPFile(const std::string& filename) {
         }
     }
     
-    // Create graph and calculate distances
+    // Create graph and configure distance calculator
     auto graph = std::make_shared<Graph>(dimension);
+    graph->distance_type_ = edge_weight_type;
+    graph->distance_calculator_ = distance_calculator;
     
-    // 使用正確的 TSPLIB 距離計算函數
-    std::cout << "Calculating distances using " << edge_weight_type << " metric..." << std::endl;
+    // Calculate distances using TDD-based distance calculator
+    std::cout << "Calculating distances using TDD-based " << edge_weight_type << " calculator..." << std::endl;
     
     for (int i = 0; i < dimension; ++i) {
         graph->setDistance(i, i, 0.0); // Distance to itself is 0
         for (int j = i + 1; j < dimension; ++j) {
-            // 使用選定的距離函數計算整數距離，然後轉為 double
-            int distance = distance_func(
+            // Use TDD-based distance calculator
+            double distance = distance_calculator->calculateDistance(
                 coordinates[i].first, coordinates[i].second,
                 coordinates[j].first, coordinates[j].second
             );
-            graph->setDistance(i, j, static_cast<double>(distance));
-            graph->setDistance(j, i, static_cast<double>(distance)); // 對稱
+            graph->setDistance(i, j, distance);
+            graph->setDistance(j, i, distance); // Symmetry
         }
     }
+    
+    std::cout << "Graph created successfully with " << dimension << " cities using " 
+              << edge_weight_type << " distance type" << std::endl;
     
     return graph;
 }
 
-double Graph::calculateEuclideanDistance(double x1, double y1, double x2, double y2) {
-    double dx = x2 - x1;
-    double dy = y2 - y1;
-    return std::sqrt(dx * dx + dy * dy);
+std::string Graph::getDistanceType() const {
+    return distance_type_;
+}
+
+std::shared_ptr<DistanceCalculator> Graph::getDistanceCalculator() const {
+    return distance_calculator_;
 }

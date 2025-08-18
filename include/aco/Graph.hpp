@@ -4,6 +4,7 @@
  * 
  * This class represents a complete undirected graph for the Traveling Salesman Problem.
  * All distances are symmetric (distance(i,j) == distance(j,i)) and non-negative.
+ * Supports accurate TSPLIB distance calculations through TDD-based distance calculators.
  */
 
 #pragma once
@@ -12,11 +13,14 @@
 #include <random>
 #include <memory>
 #include <string>
+#include "DistanceCalculator.hpp"
 
 class Graph {
 private:
     std::vector<std::vector<double>> distances_;
     int size_;
+    std::shared_ptr<DistanceCalculator> distance_calculator_;
+    std::string distance_type_;
     
     static constexpr double MIN_DISTANCE = 1.0;
     static constexpr double MAX_DISTANCE = 100.0;
@@ -59,12 +63,24 @@ public:
     void setDistance(int from, int to, double distance);
     
     /**
-     * @brief Create a Graph from a TSP file
+     * @brief Create a Graph from a TSP file with TDD-based distance calculation
      * @param filename Path to the TSP file
      * @return Shared pointer to the created Graph
      * @throws std::runtime_error if file cannot be read or parsed
      */
     static std::shared_ptr<Graph> fromTSPFile(const std::string& filename);
+    
+    /**
+     * @brief Get the distance calculation type used by this graph
+     * @return Distance type string (EUC_2D, CEIL_2D, ATT, GEO)
+     */
+    std::string getDistanceType() const;
+    
+    /**
+     * @brief Get the distance calculator used by this graph
+     * @return Shared pointer to distance calculator
+     */
+    std::shared_ptr<DistanceCalculator> getDistanceCalculator() const;
     
 private:
     /**
