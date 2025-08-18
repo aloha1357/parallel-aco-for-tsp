@@ -75,34 +75,21 @@ void PerformanceMonitor::recordMemoryCheckpoint(const std::string& label) {
 }
 
 void PerformanceMonitor::setBaselineTime(double baseline_time_ms) {
-    if (baseline_time_ms > 0.0 && metrics_.execution_time_ms > 0.0) {
-        metrics_.speedup_factor = baseline_time_ms / metrics_.execution_time_ms;
-    } else {
-        metrics_.speedup_factor = 1.0;
-    }
+    metrics_.speedup_factor = (baseline_time_ms > 0.0) ? 
+        (baseline_time_ms / metrics_.execution_time_ms) : 1.0;
 }
 
 void PerformanceMonitor::calculateSpeedup(double current_time_ms, int thread_count) {
     metrics_.thread_count = thread_count;
     
     if (current_time_ms > 0.0 && thread_count > 0) {
-        // If we have a baseline time, use it; otherwise assume speedup is based on current execution
-        if (metrics_.speedup_factor <= 1.0) {
-            // No baseline set, calculate theoretical efficiency only
-            metrics_.speedup_factor = 1.0; // No actual speedup data available
-        }
-        
-        // Calculate efficiency based on actual speedup vs theoretical maximum
+        // Speedup calculation requires a baseline single-thread time
+        // For now, we'll calculate efficiency based on theoretical maximum
         double theoretical_speedup = static_cast<double>(thread_count);
         metrics_.efficiency_percent = (metrics_.speedup_factor / theoretical_speedup) * 100.0;
         
         // Cap efficiency at 100%
         metrics_.efficiency_percent = std::min(metrics_.efficiency_percent, 100.0);
-        
-        // Ensure efficiency is non-negative
-        metrics_.efficiency_percent = std::max(metrics_.efficiency_percent, 0.0);
-    } else {
-        metrics_.efficiency_percent = 100.0; // Single thread case
     }
 }
 

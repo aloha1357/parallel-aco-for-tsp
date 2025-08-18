@@ -1,0 +1,63 @@
+{
+  "experiment_name": "Parallel_ACO_TSP_Benchmark",
+  "description": "標準化平行ACO TSP性能與質量評估實驗",
+  
+  "test_instances": [
+    {
+      "name": "berlin52",
+      "filename": "data/berlin52.tsp",
+      "optimal_solution": 7542,
+      "category": "small",
+      "description": "52城市柏林問題"
+    },
+    {
+      "name": "kroA100", 
+      "filename": "data/kroA100.tsp",
+      "optimal_solution": 21282,
+      "category": "medium",
+      "description": "100城市Krolak問題A"
+    },
+    {
+      "name": "kroA150",
+      "filename": "data/kroA150.tsp", 
+      "optimal_solution": 26524,
+      "category": "large",
+      "description": "150城市Krolak問題A"
+    }
+  ],
+  
+  "thread_configurations": [1, 2, 4, 8],
+  
+  "aco_parameters": {
+    "max_iterations": 100,
+    "alpha": 1.0,
+    "beta": 2.0,
+    "rho": 0.5,
+    "q0": 0.9,
+    "comment": "經過調優的標準參數"
+  },
+  
+  "experiment_settings": {
+    "runs_per_configuration": 5,
+    "timeout_seconds": 300,
+    "output_directory": "experiment_results",
+    "save_intermediate_results": true
+  },
+  
+  "analysis_settings": {
+    "confidence_level": 0.95,
+    "success_threshold": 1.2,
+    "generate_plots": true,
+    "plot_formats": ["png", "pdf"],
+    "statistical_tests": ["t_test", "anova"]
+  },
+  
+  "hardware_info": {
+    "note": "請在實驗報告中填寫實際硬體資訊",
+    "cpu": "Intel Core i7-XXXX",
+    "cores": 8,
+    "threads": 16,
+    "memory_gb": 32,
+    "os": "Windows 11"
+  }
+}

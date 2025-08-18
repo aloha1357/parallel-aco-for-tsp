@@ -77,6 +77,8 @@ set(ACO_SOURCES
     src/aco/SyntheticTSPGenerator.cpp
     src/aco/StrategyComparator.cpp
     src/aco/BenchmarkAnalyzer.cpp
+    src/aco/TSPLibReader.cpp
+    src/aco/ExperimentRunner.cpp
     # Add more source files as they are created
 )
 
@@ -98,6 +100,10 @@ target_link_libraries(aco_main aco_lib)
 # Comprehensive benchmark executable
 add_executable(comprehensive_benchmark comprehensive_benchmark.cpp)
 target_link_libraries(comprehensive_benchmark aco_lib)
+
+# TSPLIB standard experiment executable
+add_executable(tsplib_benchmark_experiment tsplib_benchmark_experiment.cpp)
+target_link_libraries(tsplib_benchmark_experiment aco_lib)
 
 # Unit tests (if GoogleTest is available)
 if(BUILD_TESTS)
