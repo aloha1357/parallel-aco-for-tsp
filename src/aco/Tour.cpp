@@ -38,8 +38,9 @@ void Tour::calculateLength() {
         length_ += graph_->getDistance(path_[i], path_[i + 1]);
     }
     
-    // 關鍵：補上最後一段（封閉迴路）- TSP必須是完整循環
-    if (path_.size() >= 2) {
+    // 關鍵修復：只有當路徑未形成完整循環時才補上返回邊
+    // 檢查最後一個城市是否已經是起始城市
+    if (path_.size() >= 2 && path_.back() != path_.front()) {
         length_ += graph_->getDistance(path_.back(), path_.front());
     }
 }
