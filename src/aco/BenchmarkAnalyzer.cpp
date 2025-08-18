@@ -38,15 +38,15 @@ std::vector<ScalabilityResult> BenchmarkAnalyzer::analyzeScalability(
     
     std::vector<ScalabilityResult> results;
     
-    std::cout << "=== 串行 vs 平行性能分析 ===" << std::endl;
-    std::cout << "測試圖形規模: " << graph.size() << " 城市" << std::endl;
+    std::cout << "=== Serial vs Parallel Performance Analysis ===" << std::endl;
+    std::cout << "Testing graph size: " << graph.size() << " cities" << std::endl;
     
     // 先運行串行版本作為基準
     auto baseline = runSingleScalabilityTest(graph, 1);
     double baseline_time = baseline.execution_time_ms;
     
     for (int threads : thread_counts) {
-        std::cout << "測試 " << threads << " 線程..." << std::endl;
+        std::cout << "Testing " << threads << " threads..." << std::endl;
         
         auto result = runSingleScalabilityTest(graph, threads);
         result.speedup = baseline_time / result.execution_time_ms;
@@ -54,10 +54,10 @@ std::vector<ScalabilityResult> BenchmarkAnalyzer::analyzeScalability(
         
         results.push_back(result);
         
-        std::cout << "  線程數: " << threads 
-                  << ", 時間: " << std::fixed << std::setprecision(2) << result.execution_time_ms << "ms"
-                  << ", 加速比: " << result.speedup << "x"
-                  << ", 效率: " << result.efficiency << "%" << std::endl;
+        std::cout << "  Threads: " << threads 
+                  << ", Time: " << std::fixed << std::setprecision(2) << result.execution_time_ms << "ms"
+                  << ", Speedup: " << result.speedup << "x"
+                  << ", Efficiency: " << result.efficiency << "%" << std::endl;
     }
     
     return results;
@@ -71,7 +71,7 @@ ScalabilityResult BenchmarkAnalyzer::runSingleScalabilityTest(const Graph& graph
     std::vector<double> solution_lengths;
     std::vector<size_t> memory_usages;
     
-    std::cout << "    運行 " << num_runs << " 次測試 [";
+    std::cout << "    Running " << num_runs << " tests [";
     
     for (int run = 0; run < num_runs; ++run) {
         AcoParameters params;
@@ -129,14 +129,14 @@ ScalabilityResult BenchmarkAnalyzer::runSingleScalabilityTest(const Graph& graph
     double sum_memory = std::accumulate(memory_usages.begin(), memory_usages.end(), 0.0);
     scalability_result.memory_mb = static_cast<size_t>(sum_memory / num_runs);
     
-    // 輸出統計摘要
-    std::cout << "完成 (平均: " << std::fixed << std::setprecision(1) 
+    // Output statistical summary
+    std::cout << "Completed (avg: " << std::fixed << std::setprecision(1) 
               << scalability_result.execution_time_ms << "ms, " 
               << scalability_result.avg_length << ")" << std::endl;
-    std::cout << "      時間範圍: [" << scalability_result.min_time_ms 
+    std::cout << "      Time range: [" << scalability_result.min_time_ms 
               << ", " << scalability_result.max_time_ms << "]ms (±" 
               << std::setprecision(2) << scalability_result.std_dev_time << ")" << std::endl;
-    std::cout << "      解範圍: [" << scalability_result.best_length 
+    std::cout << "      Solution range: [" << scalability_result.best_length 
               << ", " << *std::max_element(solution_lengths.begin(), solution_lengths.end()) 
               << "] (±" << scalability_result.std_dev_length << ")" << std::endl;
     
@@ -149,9 +149,9 @@ std::vector<StrategyBenchmarkResult> BenchmarkAnalyzer::benchmarkStrategies(
     
     std::vector<StrategyBenchmarkResult> all_results;
     
-    std::cout << "=== 策略效能基準測試 ===" << std::endl;
+    std::cout << "=== Strategy Performance Benchmark ===" << std::endl;
     
-    // 測試每個策略
+    // Test each strategy
     std::vector<AcoStrategy> strategies = {
         AcoStrategy::STANDARD,
         AcoStrategy::EXPLOITATION, 
@@ -161,10 +161,10 @@ std::vector<StrategyBenchmarkResult> BenchmarkAnalyzer::benchmarkStrategies(
     };
     
     for (const auto& benchmark : benchmarks) {
-        std::cout << "\n測試問題: " << benchmark.name 
-                  << " (" << benchmark.city_count << " 城市)" << std::endl;
+        std::cout << "\nTesting problem: " << benchmark.name 
+                  << " (" << benchmark.city_count << " cities)" << std::endl;
         
-        // 載入 TSPLIB 檔案
+        // Load TSPLIB file
         auto graph = TSPLibReader::loadGraphFromTSPLib(benchmark.filename);
         if (!graph) {
             std::cerr << "無法載入 " << benchmark.filename << "，跳過此測試" << std::endl;
@@ -207,7 +207,7 @@ StrategyBenchmarkResult BenchmarkAnalyzer::runStrategyBenchmark(
     std::vector<double> times;
     std::vector<int> convergence_iterations;
     
-    std::cout << "    運行 " << runs << " 次測試 [";
+    std::cout << "    Running " << runs << " tests [";
     
     for (int run = 0; run < runs; ++run) {
         auto config = strategy_comparator_.getStrategyConfig(strategy);
@@ -276,18 +276,18 @@ StrategyBenchmarkResult BenchmarkAnalyzer::runStrategyBenchmark(
     }
     benchmark_result.success_rate = static_cast<double>(successful_runs) / runs * 100.0;
     
-    // 輸出詳細統計
-    std::cout << "完成" << std::endl;
-    std::cout << "      解長度: " << std::fixed << std::setprecision(1) 
-              << "最佳=" << benchmark_result.best_length 
-              << ", 平均=" << benchmark_result.avg_length
+    // Output detailed statistics
+    std::cout << "Completed" << std::endl;
+    std::cout << "      Solution length: " << std::fixed << std::setprecision(1) 
+              << "Best=" << benchmark_result.best_length 
+              << ", Average=" << benchmark_result.avg_length
               << " (±" << std::setprecision(2) << benchmark_result.std_dev_length << ")"
               << ", 95%CI=±" << benchmark_result.confidence_interval << std::endl;
-    std::cout << "      執行時間: 平均=" << std::setprecision(1) << benchmark_result.execution_time_ms 
+    std::cout << "      Execution time: Average=" << std::setprecision(1) << benchmark_result.execution_time_ms 
               << "ms (±" << std::setprecision(2) << benchmark_result.std_dev_time << "ms)"
-              << ", 範圍=[" << benchmark_result.min_time_ms << ", " << benchmark_result.max_time_ms << "]" << std::endl;
+              << ", Range=[" << benchmark_result.min_time_ms << ", " << benchmark_result.max_time_ms << "]" << std::endl;
     std::cout << "      Gap=" << std::setprecision(2) << benchmark_result.gap_to_optimal 
-              << "%, 成功率=" << benchmark_result.success_rate << "%" << std::endl;
+              << "%, Success rate=" << benchmark_result.success_rate << "%" << std::endl;
     
     return benchmark_result;
 }
@@ -309,7 +309,7 @@ void BenchmarkAnalyzer::exportScalabilityResultsCSV(
     }
     
     file.close();
-    std::cout << "可擴展性結果已導出到: " << filename << std::endl;
+    std::cout << "Scalability results exported to: " << filename << std::endl;
 }
 
 void BenchmarkAnalyzer::exportStrategyBenchmarkCSV(
@@ -330,7 +330,7 @@ void BenchmarkAnalyzer::exportStrategyBenchmarkCSV(
     }
     
     file.close();
-    std::cout << "策略基準結果已導出到: " << filename << std::endl;
+    std::cout << "Strategy benchmark results exported to: " << filename << std::endl;
 }
 
 void BenchmarkAnalyzer::generatePlotScript(
@@ -338,7 +338,7 @@ void BenchmarkAnalyzer::generatePlotScript(
     const std::string& benchmark_csv,
     const std::string& output_dir) {
     
-    // 創建輸出目錄
+    // Create output directory
     std::filesystem::create_directories(output_dir);
     
     std::ofstream script("generate_plots.py");
@@ -541,8 +541,8 @@ if __name__ == "__main__":
 )";
 
     script.close();
-    std::cout << "Python繪圖腳本已生成: generate_plots.py" << std::endl;
-    std::cout << "執行 'python generate_plots.py' 來生成圖表" << std::endl;
+    std::cout << "Python plotting script generated: generate_plots.py" << std::endl;
+    std::cout << "Run 'python generate_plots.py' to generate charts" << std::endl;
 }
 
 void BenchmarkAnalyzer::generateBenchmarkReport(
@@ -689,7 +689,7 @@ void BenchmarkAnalyzer::generateBenchmarkReport(
     report << "*此報告由 BenchmarkAnalyzer 自動生成*\n";
     
     report.close();
-    std::cout << "基準測試報告已生成: " << filename << std::endl;
+    std::cout << "Benchmark report generated: " << filename << std::endl;
 }
 
 std::unique_ptr<Graph> BenchmarkAnalyzer::loadTSPFile(const std::string& filename) {
@@ -702,36 +702,36 @@ void BenchmarkAnalyzer::runDetailedAverageAnalysis(
     int runs_per_configuration,
     const std::string& output_prefix) {
     
-    std::cout << "=== 詳細平均測試分析 ===" << std::endl;
-    std::cout << "每配置運行次數: " << runs_per_configuration << std::endl;
-    std::cout << "輸出前綴: " << output_prefix << std::endl;
+    std::cout << "=== Detailed Average Test Analysis ===" << std::endl;
+    std::cout << "Runs per configuration: " << runs_per_configuration << std::endl;
+    std::cout << "Output prefix: " << output_prefix << std::endl;
     
     std::vector<ScalabilityResult> all_scalability_results;
     std::vector<StrategyBenchmarkResult> all_strategy_results;
     
-    // 執行詳細的可擴展性測試
+    // Perform detailed scalability testing
     for (const auto& benchmark : benchmarks) {
-        std::cout << "\n=== 測試問題: " << benchmark.name << " (" << benchmark.city_count << "城市) ===" << std::endl;
+        std::cout << "\n=== Testing problem: " << benchmark.name << " (" << benchmark.city_count << " cities) ===" << std::endl;
         
         auto graph = TSPLibReader::loadGraphFromTSPLib(benchmark.filename);
         if (!graph) {
-            std::cerr << "無法載入 " << benchmark.filename << "，跳過此測試" << std::endl;
+            std::cerr << "Failed to load " << benchmark.filename << ", skipping this test" << std::endl;
             continue;
         }
         
         std::vector<int> thread_counts = {1, 2, 4, 8, 16};
         
-        // 進行可擴展性測試
+        // Perform scalability testing
         for (int threads : thread_counts) {
-            std::cout << "\n--- 線程數: " << threads << " ---" << std::endl;
+            std::cout << "\n--- Thread count: " << threads << " ---" << std::endl;
             
-            // 執行多次測試並計算詳細統計
+            // Execute multiple tests and calculate detailed statistics
             std::vector<double> execution_times;
             std::vector<double> solution_lengths;
             std::vector<size_t> memory_usages;
             
             for (int run = 0; run < runs_per_configuration; ++run) {
-                std::cout << "  運行 " << (run + 1) << "/" << runs_per_configuration << "..." << std::endl;
+                std::cout << "  Run " << (run + 1) << "/" << runs_per_configuration << "..." << std::endl;
                 
                 AcoParameters params;
                 params.num_ants = graph->size();
@@ -782,17 +782,17 @@ void BenchmarkAnalyzer::runDetailedAverageAnalysis(
             
             all_scalability_results.push_back(scalability_result);
             
-            // 輸出摘要
-            std::cout << "  結果摘要:" << std::endl;
-            std::cout << "    平均執行時間: " << std::fixed << std::setprecision(2) 
+            // Output summary
+            std::cout << "  Result summary:" << std::endl;
+            std::cout << "    Average execution time: " << std::fixed << std::setprecision(2) 
                       << scalability_result.execution_time_ms << " ± " << scalability_result.std_dev_time << " ms" << std::endl;
-            std::cout << "    最佳解長度: " << scalability_result.best_length << std::endl;
-            std::cout << "    平均解長度: " << scalability_result.avg_length << " ± " << scalability_result.std_dev_length << std::endl;
+            std::cout << "    Best solution length: " << scalability_result.best_length << std::endl;
+            std::cout << "    Average solution length: " << scalability_result.avg_length << " ± " << scalability_result.std_dev_length << std::endl;
         }
         
-        // 計算加速比和效率
+        // Calculate speedup and efficiency
         if (!all_scalability_results.empty()) {
-            double baseline_time = all_scalability_results[0].execution_time_ms;  // 單線程基準
+            double baseline_time = all_scalability_results[0].execution_time_ms;  // Single-thread baseline
             for (auto& result : all_scalability_results) {
                 result.speedup = baseline_time / result.execution_time_ms;
                 result.efficiency = result.speedup / result.thread_count * 100.0;
@@ -800,17 +800,17 @@ void BenchmarkAnalyzer::runDetailedAverageAnalysis(
         }
     }
     
-    // 導出詳細結果
+    // Export detailed results
     std::string detailed_csv = output_prefix + "_detailed_scalability.csv";
     exportDetailedScalabilityResultsCSV(all_scalability_results, detailed_csv);
     
-    // 生成統計分析報告
+    // Generate statistical analysis report
     std::string stats_report = output_prefix + "_statistical_analysis.md";
     performStatisticalTests(all_scalability_results, stats_report);
     
-    std::cout << "\n=== 詳細分析完成 ===" << std::endl;
-    std::cout << "詳細結果: " << detailed_csv << std::endl;
-    std::cout << "統計分析: " << stats_report << std::endl;
+    std::cout << "\n=== Detailed Analysis Complete ===" << std::endl;
+    std::cout << "Detailed results: " << detailed_csv << std::endl;
+    std::cout << "Statistical analysis: " << stats_report << std::endl;
 }
 
 void BenchmarkAnalyzer::performStatisticalTests(
@@ -822,7 +822,7 @@ void BenchmarkAnalyzer::performStatisticalTests(
     
     report << "**生成日期**: " << std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()) << "\n\n";
     
-    // 按線程數分組
+    // Group by thread count
     std::map<int, std::vector<ScalabilityResult>> thread_groups;
     for (const auto& result : results) {
         thread_groups[result.thread_count].push_back(result);
@@ -835,7 +835,7 @@ void BenchmarkAnalyzer::performStatisticalTests(
     for (const auto& [threads, group_results] : thread_groups) {
         if (group_results.empty()) continue;
         
-        // 計算統計指標
+        // Calculate statistical metrics
         std::vector<double> times;
         for (const auto& result : group_results) {
             times.push_back(result.execution_time_ms);
@@ -847,12 +847,12 @@ void BenchmarkAnalyzer::performStatisticalTests(
             variance += std::pow(time - mean, 2);
         }
         double std_dev = std::sqrt(variance / times.size());
-        double cv = std_dev / mean * 100.0;  // 變異係數
+        double cv = std_dev / mean * 100.0;  // Coefficient of variation
         
-        // 95% 置信區間
-        double t_value = 1.96;  // 近似正態分佈
+        // 95% confidence interval
+        double t_value = 1.96;  // Approximate normal distribution
         if (times.size() <= 30) {
-            t_value = 2.776;  // t分佈近似
+            t_value = 2.776;  // t-distribution approximation
         }
         double margin_error = t_value * std_dev / std::sqrt(times.size());
         
@@ -885,10 +885,10 @@ void BenchmarkAnalyzer::performStatisticalTests(
             double efficiency = actual_speedup / threads * 100.0;
             
             std::string rating;
-            if (efficiency >= 90) rating = "優秀";
-            else if (efficiency >= 75) rating = "良好";
-            else if (efficiency >= 60) rating = "中等";
-            else rating = "不佳";
+            if (efficiency >= 90) rating = "Excellent";
+            else if (efficiency >= 75) rating = "Good";
+            else if (efficiency >= 60) rating = "Fair";
+            else rating = "Poor";
             
             report << "| " << threads << " | " << threads << ".00x"
                    << " | " << std::fixed << std::setprecision(2) << actual_speedup << "x"
@@ -913,9 +913,9 @@ void BenchmarkAnalyzer::performStatisticalTests(
         double min_val = *std::min_element(times.begin(), times.end());
         double max_val = *std::max_element(times.begin(), times.end());
         
-        report << "- **" << threads << "線程**: 平均=" << std::fixed << std::setprecision(2) << mean 
-               << "ms, 範圍=[" << min_val << ", " << max_val << "]"
-               << ", 變異幅度=" << std::setprecision(1) << (max_val - min_val) / mean * 100 << "%\n";
+        report << "- **" << threads << " threads**: Average=" << std::fixed << std::setprecision(2) << mean 
+               << "ms, Range=[" << min_val << ", " << max_val << "]"
+               << ", Variation=" << std::setprecision(1) << (max_val - min_val) / mean * 100 << "%\n";
     }
     
     // 建議
@@ -932,7 +932,7 @@ void BenchmarkAnalyzer::performStatisticalTests(
     report << "3. **擴展性考量**: 考慮未來擴展需求，預留性能餘量\n";
     
     report.close();
-    std::cout << "統計分析報告已生成: " << output_file << std::endl;
+    std::cout << "Statistical analysis report generated: " << output_file << std::endl;
 }
 
 void BenchmarkAnalyzer::exportDetailedScalabilityResultsCSV(
@@ -959,7 +959,7 @@ void BenchmarkAnalyzer::exportDetailedScalabilityResultsCSV(
     }
     
     file.close();
-    std::cout << "詳細可擴展性結果已導出到: " << filename << std::endl;
+    std::cout << "Detailed scalability results exported to: " << filename << std::endl;
 }
 
 } // namespace aco

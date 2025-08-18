@@ -19,30 +19,30 @@ std::vector<ExperimentResult> ExperimentRunner::runCompleteExperiment(
     
     std::vector<ExperimentResult> all_results;
     
-    std::cout << "=== 開始完整實驗 ===" << std::endl;
+    std::cout << "=== Starting Complete Experiment ===" << std::endl;
     
     for (size_t i = 0; i < instances.size(); ++i) {
         const auto& instance = instances[i];
         
-        std::cout << "\n進度: [" << (i + 1) << "/" << instances.size() << "] "
-                  << "測試問題: " << instance.name << " (" << instance.optimal_solution << ")" << std::endl;
+        std::cout << "\nProgress: [" << (i + 1) << "/" << instances.size() << "] "
+                  << "Testing problem: " << instance.name << " (" << instance.optimal_solution << ")" << std::endl;
         
-        // 建立基準線 (單執行緒)
+        // Establish baseline (single thread)
         establishBaseline(instance);
         
-        // 運行該問題的所有配置
+        // Run all configurations for this problem
         auto problem_results = runProblemExperiment(instance);
         
-        // 添加到總結果中
+        // Add to total results
         all_results.insert(all_results.end(), problem_results.begin(), problem_results.end());
         
-        // 即時保存中間結果
+        // Save intermediate results in real time
         std::string partial_filename = config_.output_directory + "/partial_results_" + instance.name + ".csv";
         exportResults(problem_results, partial_filename);
     }
     
-    std::cout << "\n=== 實驗完成 ===" << std::endl;
-    std::cout << "總實驗次數: " << all_results.size() << std::endl;
+    std::cout << "\n=== Experiment Complete ===" << std::endl;
+    std::cout << "Total experiment runs: " << all_results.size() << std::endl;
     
     return all_results;
 }
@@ -52,17 +52,17 @@ std::vector<ExperimentResult> ExperimentRunner::runProblemExperiment(
     
     std::vector<ExperimentResult> results;
     
-    // 載入圖
+    // Load graph
     auto graph = TSPLibReader::loadGraphFromTSPLib(instance.filename);
     if (!graph) {
-        std::cerr << "無法載入圖檔: " << instance.filename << std::endl;
+        std::cerr << "Unable to load graph file: " << instance.filename << std::endl;
         return results;
     }
     
-    std::cout << "  問題規模: " << graph->size() << " 城市" << std::endl;
+    std::cout << "  Problem size: " << graph->size() << " cities" << std::endl;
     
     for (int thread_count : config_.thread_counts) {
-        std::cout << "    測試 " << thread_count << " 執行緒..." << std::flush;
+        std::cout << "    Testing " << thread_count << " threads..." << std::flush;
         
         for (int run = 1; run <= config_.runs_per_configuration; ++run) {
             auto result = runSingleConfiguration(instance, thread_count, run);
@@ -71,7 +71,7 @@ std::vector<ExperimentResult> ExperimentRunner::runProblemExperiment(
             std::cout << " [" << run << "]" << std::flush;
         }
         
-        // 計算該執行緒配置的平均結果
+        // Calculate average results for this thread configuration
         auto thread_results = std::vector<ExperimentResult>(
             results.end() - config_.runs_per_configuration, results.end());
         
@@ -80,7 +80,7 @@ std::vector<ExperimentResult> ExperimentRunner::runProblemExperiment(
         double avg_length = calculateMean(extractValues(thread_results,
             [](const ExperimentResult& r) { return r.best_tour_length; }));
         
-        std::cout << " 完成 (平均: " << std::fixed << std::setprecision(1) 
+        std::cout << " Completed (avg: " << std::fixed << std::setprecision(1) 
                   << avg_time << "ms, " << avg_length << ")" << std::endl;
     }
     
@@ -92,48 +92,48 @@ ExperimentResult ExperimentRunner::runSingleConfiguration(
     int thread_count,
     int run_number) {
     
-    // 載入圖
+    // Load graph
     auto graph = TSPLibReader::loadGraphFromTSPLib(instance.filename);
     
-    // 設置ACO參數
+    // Set ACO parameters
     AcoParameters params;
-    params.num_ants = graph->size();  // 螞蟻數量 = 城市數量
+    params.num_ants = graph->size();  // Number of ants = number of cities
     params.max_iterations = config_.max_iterations;
     params.alpha = config_.alpha;
     params.beta = config_.beta;
     params.rho = config_.rho;
     params.num_threads = thread_count;
     
-    // 創建ACO引擎
+    // Create ACO engine
     AcoEngine engine(graph, params);
     
-    // 開始性能監控
+    // Start performance monitoring
     monitor_.startMonitoring();
     auto start_time = std::chrono::high_resolution_clock::now();
     
-    // 運行算法
+    // Run algorithm
     auto aco_result = engine.run();
     
-    // 停止監控
+    // Stop monitoring
     auto end_time = std::chrono::high_resolution_clock::now();
     monitor_.stopMonitoring();
     
-    // 計算執行時間
+    // Calculate execution time
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
     double execution_time_ms = duration.count() / 1000.0;
     
-    // 獲取性能指標
+    // Get performance metrics
     auto metrics = monitor_.getMetrics();
     
-    // 計算加速比和效率
+    // Calculate speedup and efficiency
     double baseline_time = baseline_times_[instance.name];
     double speedup = baseline_time / execution_time_ms;
     double efficiency = (speedup / thread_count) * 100.0;
     
-    // 計算近似比
+    // Calculate approximation ratio
     double approximation_ratio = aco_result.best_tour_length / instance.optimal_solution;
     
-    // 構建結果
+    // Construct result
     ExperimentResult result;
     result.problem_name = instance.name;
     result.problem_size = graph->size();
@@ -157,12 +157,12 @@ ExperimentResult ExperimentRunner::runSingleConfiguration(
 
 void ExperimentRunner::establishBaseline(const TSPBenchmarkInstance& instance) {
     if (baseline_times_.find(instance.name) != baseline_times_.end()) {
-        return;  // 已經建立基準線
+        return;  // Already established baseline
     }
     
-    std::cout << "  建立基準線 (單執行緒)..." << std::flush;
+    std::cout << "  Establishing baseline (single-threaded)..." << std::flush;
     
-    // 運行3次單執行緒測試，取平均
+    // Run 3 single-threaded tests, take average
     std::vector<double> times;
     for (int i = 0; i < 3; ++i) {
         auto result = runSingleConfiguration(instance, 1, i + 1);
@@ -171,7 +171,7 @@ void ExperimentRunner::establishBaseline(const TSPBenchmarkInstance& instance) {
     
     baseline_times_[instance.name] = calculateMean(times);
     
-    std::cout << " 完成 (" << std::fixed << std::setprecision(1) 
+    std::cout << " Completed (" << std::fixed << std::setprecision(1) 
               << baseline_times_[instance.name] << "ms)" << std::endl;
 }
 
@@ -180,7 +180,7 @@ std::vector<AggregatedResult> ExperimentRunner::aggregateResults(
     
     std::vector<AggregatedResult> aggregated;
     
-    // 按問題名稱和執行緒數分組
+    // Group by problem name and thread count
     std::map<std::pair<std::string, int>, std::vector<ExperimentResult>> groups;
     
     for (const auto& result : results) {
@@ -188,13 +188,13 @@ std::vector<AggregatedResult> ExperimentRunner::aggregateResults(
         groups[key].push_back(result);
     }
     
-    // 對每組計算統計數據
+    // Calculate statistics for each group
     for (const auto& [key, group_results] : groups) {
         AggregatedResult agg;
         agg.problem_name = key.first;
         agg.thread_count = key.second;
         
-        // 提取數值
+        // Extract numerical values
         auto extract_times = [](const std::vector<ExperimentResult>& results) {
             std::vector<double> values;
             for (const auto& r : results) values.push_back(r.execution_time_ms);
@@ -231,7 +231,7 @@ std::vector<AggregatedResult> ExperimentRunner::aggregateResults(
         std::vector<double> efficiencies = extract_efficiencies(group_results);
         std::vector<double> ratios = extract_ratios(group_results);
         
-        // 計算統計
+        // Calculate statistics
         agg.mean_execution_time = calculateMean(times);
         agg.std_execution_time = calculateStandardDeviation(times);
         agg.mean_tour_length = calculateMean(lengths);
@@ -243,7 +243,7 @@ std::vector<AggregatedResult> ExperimentRunner::aggregateResults(
         agg.best_tour_length = *std::min_element(lengths.begin(), lengths.end());
         agg.worst_tour_length = *std::max_element(lengths.begin(), lengths.end());
         
-        // 計算成功率 (近似比 <= 1.2 的比例)
+        // Calculate success rate (proportion with approximation ratio <= 1.2)
         int success_count = 0;
         for (double ratio : ratios) {
             if (ratio <= 1.2) success_count++;
