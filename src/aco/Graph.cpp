@@ -79,13 +79,21 @@ std::shared_ptr<Graph> Graph::fromTSPFile(const std::string& filename) {
     // Parse header
     while (std::getline(file, line)) {
         if (line.find("DIMENSION") != std::string::npos) {
-            std::istringstream iss(line);
-            std::string key, colon;
-            iss >> key >> colon >> dimension;
+            // Find the colon and extract the number after it
+            size_t colon_pos = line.find(':');
+            if (colon_pos != std::string::npos) {
+                std::string value_str = line.substr(colon_pos + 1);
+                std::istringstream iss(value_str);
+                iss >> dimension;
+            }
         } else if (line.find("EDGE_WEIGHT_TYPE") != std::string::npos) {
-            std::istringstream iss(line);
-            std::string key, colon;
-            iss >> key >> colon >> edge_weight_type;
+            // Find the colon and extract the type after it
+            size_t colon_pos = line.find(':');
+            if (colon_pos != std::string::npos) {
+                std::string value_str = line.substr(colon_pos + 1);
+                std::istringstream iss(value_str);
+                iss >> edge_weight_type;
+            }
         } else if (line.find("NODE_COORD_SECTION") != std::string::npos) {
             break;
         }
