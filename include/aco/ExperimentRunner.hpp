@@ -98,6 +98,7 @@ public:
     
     // 導出結果到CSV
     void exportResults(const std::vector<ExperimentResult>& results);
+    void exportResults(const std::vector<ExperimentResult>& results, const std::string& filename);
     void exportAggregatedResults(const std::vector<AggregatedResult>& results);
     
     // 生成分析報告

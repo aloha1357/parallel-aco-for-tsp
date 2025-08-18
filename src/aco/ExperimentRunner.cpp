@@ -195,14 +195,41 @@ std::vector<AggregatedResult> ExperimentRunner::aggregateResults(
         agg.thread_count = key.second;
         
         // 提取數值
-        std::vector<double> times, lengths, speedups, efficiencies, ratios;
-        for (const auto& r : group_results) {
-            times.push_back(r.execution_time_ms);
-            lengths.push_back(r.best_tour_length);
-            speedups.push_back(r.speedup);
-            efficiencies.push_back(r.efficiency);
-            ratios.push_back(r.approximation_ratio);
-        }
+        auto extract_times = [](const std::vector<ExperimentResult>& results) {
+            std::vector<double> values;
+            for (const auto& r : results) values.push_back(r.execution_time_ms);
+            return values;
+        };
+        
+        auto extract_lengths = [](const std::vector<ExperimentResult>& results) {
+            std::vector<double> values;
+            for (const auto& r : results) values.push_back(r.best_tour_length);
+            return values;
+        };
+        
+        auto extract_speedups = [](const std::vector<ExperimentResult>& results) {
+            std::vector<double> values;
+            for (const auto& r : results) values.push_back(r.speedup);
+            return values;
+        };
+        
+        auto extract_efficiencies = [](const std::vector<ExperimentResult>& results) {
+            std::vector<double> values;
+            for (const auto& r : results) values.push_back(r.efficiency);
+            return values;
+        };
+        
+        auto extract_ratios = [](const std::vector<ExperimentResult>& results) {
+            std::vector<double> values;
+            for (const auto& r : results) values.push_back(r.approximation_ratio);
+            return values;
+        };
+        
+        std::vector<double> times = extract_times(group_results);
+        std::vector<double> lengths = extract_lengths(group_results);
+        std::vector<double> speedups = extract_speedups(group_results);
+        std::vector<double> efficiencies = extract_efficiencies(group_results);
+        std::vector<double> ratios = extract_ratios(group_results);
         
         // 計算統計
         agg.mean_execution_time = calculateMean(times);
@@ -229,12 +256,15 @@ std::vector<AggregatedResult> ExperimentRunner::aggregateResults(
     return aggregated;
 }
 
+void ExperimentRunner::exportResults(const std::vector<ExperimentResult>& results) {
+    std::string filename = config_.output_directory + "/detailed_results.csv";
+    exportResults(results, filename);
+}
+
 void ExperimentRunner::exportResults(const std::vector<ExperimentResult>& results, 
                                     const std::string& filename) {
-    std::string output_file = filename.empty() ? 
-        config_.output_directory + "/detailed_results.csv" : filename;
     
-    std::ofstream file(output_file);
+    std::ofstream file(filename);
     
     // CSV標頭
     file << "Problem_Name,Problem_Size,Optimal_Solution,Thread_Count,Run_Number,"
@@ -258,7 +288,7 @@ void ExperimentRunner::exportResults(const std::vector<ExperimentResult>& result
     }
     
     file.close();
-    std::cout << "詳細結果已導出: " << output_file << std::endl;
+    std::cout << "詳細結果已導出: " << filename << std::endl;
 }
 
 void ExperimentRunner::exportAggregatedResults(const std::vector<AggregatedResult>& results) {
@@ -472,18 +502,6 @@ bool ExperimentRunner::validateResults(const std::vector<ExperimentResult>& resu
     }
     
     return results.size() >= expected_count * 0.8;  // 允許20%的誤差
-}
-
-// 輔助函數模板
-template<typename Func>
-std::vector<double> ExperimentRunner::extractValues(
-    const std::vector<ExperimentResult>& results, Func extractor) {
-    std::vector<double> values;
-    values.reserve(results.size());
-    for (const auto& result : results) {
-        values.push_back(extractor(result));
-    }
-    return values;
 }
 
 } // namespace aco

@@ -24,6 +24,14 @@ struct ScalabilityResult {
     double speedup;
     double efficiency;
     size_t memory_mb;
+    
+    // 新增統計字段
+    double avg_length;          // 平均解長度
+    double std_dev_time;        // 執行時間標準差
+    double std_dev_length;      // 解長度標準差
+    double min_time_ms;         // 最短執行時間
+    double max_time_ms;         // 最長執行時間
+    int total_runs;             // 總運行次數
 };
 
 struct StrategyBenchmarkResult {
@@ -35,6 +43,14 @@ struct StrategyBenchmarkResult {
     double gap_to_optimal;  // (solution - optimal) / optimal * 100%
     int convergence_iteration;
     double success_rate;  // 在多次運行中找到好解的比例
+    
+    // 新增統計字段
+    double std_dev_length;      // 解長度標準差
+    double std_dev_time;        // 執行時間標準差
+    double worst_length;        // 最差解長度
+    double min_time_ms;         // 最短執行時間
+    double max_time_ms;         // 最長執行時間
+    double confidence_interval; // 95%置信區間
 };
 
 class BenchmarkAnalyzer {
@@ -86,6 +102,19 @@ public:
         const std::string& filename = "BENCHMARK_REPORT.md"
     );
     
+    // 新增：進行詳細統計分析的平均測試
+    void runDetailedAverageAnalysis(
+        const std::vector<TSPBenchmark>& benchmarks,
+        int runs_per_configuration = 10,
+        const std::string& output_prefix = "detailed_analysis"
+    );
+    
+    // 新增：統計顯著性測試
+    void performStatisticalTests(
+        const std::vector<ScalabilityResult>& results,
+        const std::string& output_file = "statistical_analysis.md"
+    );
+    
 private:
     // 運行單一配置
     ScalabilityResult runSingleScalabilityTest(const Graph& graph, int thread_count);
@@ -100,6 +129,12 @@ private:
     
     // 載入TSP檔案
     std::unique_ptr<Graph> loadTSPFile(const std::string& filename);
+    
+    // 新增：導出詳細統計結果
+    void exportDetailedScalabilityResultsCSV(
+        const std::vector<ScalabilityResult>& results,
+        const std::string& filename
+    );
 };
 
 } // namespace aco

@@ -214,3 +214,5 @@ void TSPLibReader::parseHeader(const std::vector<std::string>& lines, TSPLibInst
         }
     }
 }
+
+} // namespace aco
