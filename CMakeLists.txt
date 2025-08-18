@@ -101,6 +101,17 @@ target_link_libraries(aco_main aco_lib)
 add_executable(comprehensive_benchmark comprehensive_benchmark.cpp)
 target_link_libraries(comprehensive_benchmark aco_lib)
 
+# Enhanced average testing executables
+add_executable(enhanced_average_test enhanced_average_test.cpp)
+target_link_libraries(enhanced_average_test aco_lib)
+
+add_executable(quick_average_test quick_average_test.cpp)
+target_link_libraries(quick_average_test aco_lib)
+
+# TSPLibReader test executable
+add_executable(test_tsplib_reader test_tsplib_reader.cpp)
+target_link_libraries(test_tsplib_reader aco_lib)
+
 # TSPLIB standard experiment executable - temporarily disabled
 # add_executable(tsplib_benchmark_experiment tsplib_benchmark_experiment.cpp)
 # target_link_libraries(tsplib_benchmark_experiment aco_lib)
