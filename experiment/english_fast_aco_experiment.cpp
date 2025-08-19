@@ -215,7 +215,7 @@ private:
     }
     
 public:
-    void runExperiment(bool development_mode = true) {
+    void runExperiment(bool development_mode = true, bool enable_time_budget = false) {
         std::cout << "=== English Fast ACO Parallel Experiment ===\n";
         std::cout << "OpenMP: " << _OPENMP << ", Max threads: " << omp_get_max_threads() << std::endl;
         
@@ -244,7 +244,10 @@ public:
         auto start_time = std::chrono::high_resolution_clock::now();
         
         runFixedIterationExperiment();
-        runTimeBudgetExperiment();
+        
+        if (enable_time_budget) {
+            runTimeBudgetExperiment();
+        }
         
         auto end_time = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::seconds>(end_time - start_time);
@@ -346,24 +349,28 @@ public:
 int main(int argc, char* argv[]) {
     try {
         bool development_mode = true;
+        bool enable_time_budget = false;
         
         // Parse command line arguments
         for (int i = 1; i < argc; ++i) {
             std::string arg = argv[i];
             if (arg == "--production") {
                 development_mode = false;
+            } else if (arg == "--time-budget") {
+                enable_time_budget = true;
             } else if (arg == "--help") {
                 std::cout << "Usage: " << argv[0] << " [options]\n";
                 std::cout << "Options:\n";
-                std::cout << "  --production    Run comprehensive experiment (50 iterations, 10 runs)\n";
-                std::cout << "  --help         Show this help message\n\n";
-                std::cout << "Default: Development mode (10 iterations, 3 runs) with fast execution\n";
+                std::cout << "  --production     Run comprehensive experiment (50 iterations, 10 runs)\n";
+                std::cout << "  --time-budget    Enable time budget experiment (slower)\n";
+                std::cout << "  --help          Show this help message\n\n";
+                std::cout << "Default: Development mode (10 iterations, 3 runs) with fixed iterations only\n";
                 return 0;
             }
         }
         
         EnglishFastAcoExperiment experiment;
-        experiment.runExperiment(development_mode);
+        experiment.runExperiment(development_mode, enable_time_budget);
         
         return 0;
     } catch (const std::exception& e) {
