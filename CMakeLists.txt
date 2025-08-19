@@ -232,7 +232,12 @@ target_include_directories(optimized_aco_experiment PRIVATE include)
 # Quick ACO Experiment (fast scalability test)
 add_executable(quick_aco_experiment experiment/quick_aco_experiment.cpp)
 target_link_libraries(quick_aco_experiment aco_lib)
-target_include_directories(quick_aco_experiment PRIVATE include)# Install targets
+target_include_directories(quick_aco_experiment PRIVATE include)
+
+# Parallel Diagnostic Test
+add_executable(parallel_diagnostic experiment/parallel_diagnostic.cpp)
+target_link_libraries(parallel_diagnostic aco_lib)
+target_include_directories(parallel_diagnostic PRIVATE include)# Install targets
 install(TARGETS aco_lib DESTINATION lib)
 install(DIRECTORY include/ DESTINATION include)
 
