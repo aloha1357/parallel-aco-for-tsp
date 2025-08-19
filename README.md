@@ -30,104 +30,62 @@ A high-performance **Parallel Ant Colony Optimization (ACO)** implementation for
 ## 🏗️ Architecture Overview
 
 ```mermaid
-graph TB
-    subgraph "Core Engine"
-        AE[AcoEngine]
-        PM[PheromoneModel]
-        TL[ThreadLocalPheromoneModel]
-        A[Ant]
+graph TD
+    subgraph "Core Logic"
+        AntColony(AntColony)
+        Ant(Ant)
     end
-    
+
     subgraph "Data Layer"
-        G[Graph]
-        T[Tour]
-        DC[DistanceCalculator]
-        TSP[TSPLibReader]
+        Graph(Graph)
+        TSPLibReader(TSPLibReader)
+        DistanceCalculator(DistanceCalculator)
+        Tour(Tour)
     end
-    
-    subgraph "Performance & Analysis"
-        PerfM[PerformanceMonitor]
-        BA[BenchmarkAnalyzer]
-        ER[ExperimentRunner]
-        SC[StrategyComparator]
+
+    subgraph "Execution"
+        Main(main.cpp)
+        OpenMP(OpenMP Threads)
     end
-    
-    subgraph "Parallel Execution"
-        OMP[OpenMP Threads]
-        WL[Workload Distribution]
-        TS[Thread Synchronization]
-    end
-    
-    AE --> PM
-    AE --> A
-    A --> G
-    A --> T
-    G --> DC
-    G --> TSP
-    AE --> PerfM
-    PM --> TL
-    ER --> BA
-    AE --> OMP
-    OMP --> WL
-    OMP --> TS
-    
-    classDef core fill:#e1f5fe
-    classDef data fill:#f3e5f5
-    classDef perf fill:#e8f5e8
-    classDef parallel fill:#fff3e0
-    
-    class AE,PM,TL,A core
-    class G,T,DC,TSP data
-    class PerfM,BA,ER,SC perf
-    class OMP,WL,TS parallel
+
+    Main --> AntColony
+    AntColony --> Graph
+    AntColony --> Ant
+    AntColony --> OpenMP
+
+    Ant -- uses --> Graph
+    Ant -- contains --> Tour
+
+    Graph --> TSPLibReader
+    Graph --> DistanceCalculator
 ```
 
 ## 🔄 Algorithm Flow
 
 ```mermaid
-flowchart TD
-    Start([Start]) --> Init[Initialize Parameters]
-    Init --> CreateGraph[Create Graph from TSP File]
-    CreateGraph --> InitPheromone[Initialize Pheromone Matrix]
-    InitPheromone --> SetThreads[Set OpenMP Threads]
-    
-    SetThreads --> MainLoop{Iteration < MaxIter?}
-    MainLoop -->|Yes| ParallelAnts[Parallel Ant Construction]
-    
-    subgraph "Parallel Execution"
-        ParallelAnts --> Ant1[Thread 1: Ants 1-N/T]
-        ParallelAnts --> Ant2[Thread 2: Ants N/T+1-2N/T]
-        ParallelAnts --> AntN[Thread T: Ants ...]
-        
-        Ant1 --> LocalPheromone1[Local Pheromone Δ1]
-        Ant2 --> LocalPheromone2[Local Pheromone Δ2]
-        AntN --> LocalPheromoneN[Local Pheromone ΔN]
-    end
-    
-    LocalPheromone1 --> Merge[Merge Thread Results]
-    LocalPheromone2 --> Merge
-    LocalPheromoneN --> Merge
-    
-    Merge --> UpdateBest[Update Global Best]
-    UpdateBest --> Evaporate[Pheromone Evaporation]
-    Evaporate --> Deposit[Pheromone Deposition]
-    Deposit --> CheckConvergence{Converged?}
-    
-    CheckConvergence -->|No| MainLoop
-    CheckConvergence -->|Yes| Results[Return Best Solution]
-    MainLoop -->|No| Results
-    
-    Results --> End([End])
-    
-    classDef startEnd fill:#4caf50,color:#fff
-    classDef process fill:#2196f3,color:#fff
-    classDef decision fill:#ff9800,color:#fff
-    classDef parallel fill:#9c27b0,color:#fff
-    
-    class Start,End startEnd
-    class Init,CreateGraph,InitPheromone,SetThreads,UpdateBest,Evaporate,Deposit,Results process
-    class MainLoop,CheckConvergence decision
-    class ParallelAnts,Ant1,Ant2,AntN,LocalPheromone1,LocalPheromone2,LocalPheromoneN,Merge parallel
+graph TD
+    A[Start] --> B[Initialize Parameters];
+    B --> C[Create Graph from TSP File];
+    C --> D[Initialize Pheromone Matrix];
+    D --> E[Set OpenMP Threads];
+    E --> F[Iteration < MaxIter?];
+
+    F -->|Yes| G[Parallel Ant Construction];
+    G --> H1[Thread 1: Ants 1 to N/T find paths];
+    G --> H2[Thread 2: Ants N/T+1 to 2N/T find paths];
+    G --> H3[Thread T: Ants ... find paths];
+
+    H3 --> I[Implicit Barrier: All threads sync];
+
+    I --> J[Update Global Best Tour];
+    J --> K[Pheromone Evaporation];
+    K --> L[Pheromone Deposition];
+
+    L --> M[Converged?];
+    M -->|No| F;
+    M -->|Yes| N[Return Best Solution];
+    N --> O[End];
+
 ```
 
 ## 📊 Performance Results
