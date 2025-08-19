@@ -1,4 +1,5 @@
 #include "aco/TSPLibReader.hpp"
+#include "aco/DistanceCalculator.hpp"
 #include <fstream>
 #include <sstream>
 #include <iostream>
@@ -49,13 +50,23 @@ std::unique_ptr<Graph> TSPLibReader::convertToGraph(const TSPLibInstance& instan
     int n = instance.dimension;
     auto graph = std::make_unique<Graph>(n);
     
+    // 使用 DistanceCalculatorFactory 創建適當的距離計算器
+    auto distance_calculator = DistanceCalculatorFactory::create(instance.edge_weight_type);
+    if (!distance_calculator) {
+        std::cerr << "不支援的距離類型: " << instance.edge_weight_type << std::endl;
+        // 默認使用歐幾里得距離
+        distance_calculator = DistanceCalculatorFactory::create("EUC_2D");
+    }
+    
     // 計算所有城市間的距離
     for (int i = 0; i < n; ++i) {
         for (int j = 0; j < n; ++j) {
             if (i != j) {
-                double distance = calculateEuclideanDistance(
-                    instance.coordinates[i], 
-                    instance.coordinates[j]
+                double distance = distance_calculator->calculateDistance(
+                    instance.coordinates[i].first,  // x1
+                    instance.coordinates[i].second, // y1
+                    instance.coordinates[j].first,  // x2
+                    instance.coordinates[j].second  // y2
                 );
                 graph->setDistance(i, j, distance);
             }
@@ -143,15 +154,6 @@ std::vector<std::pair<double, double>> TSPLibReader::parseNodeCoordSection(
     }
     
     return coordinates;
-}
-
-double TSPLibReader::calculateEuclideanDistance(
-    const std::pair<double, double>& p1, 
-    const std::pair<double, double>& p2) {
-    
-    double dx = p1.first - p2.first;
-    double dy = p1.second - p2.second;
-    return std::sqrt(dx * dx + dy * dy);
 }
 
 std::vector<std::string> TSPLibReader::readFileLines(const std::string& filename) {

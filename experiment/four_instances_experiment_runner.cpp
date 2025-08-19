@@ -12,10 +12,10 @@
 #include <numeric>
 #include <cmath>
 
-#include "../src/aco/Graph.hpp"
-#include "../src/aco/AcoEngine.hpp"
-#include "../src/aco/TSPLibReader.hpp"
-#include "../src/aco/PerformanceMonitor.hpp"
+#include "../include/aco/Graph.hpp"
+#include "../include/aco/AcoEngine.hpp"
+#include "../include/aco/TSPLibReader.hpp"
+#include "../include/aco/PerformanceMonitor.hpp"
 
 /**
  * 四個實例(50,100,150,202城市)的完整平行ACO實驗
@@ -114,10 +114,10 @@ public:
     
     void setupInstances() {
         instances_ = {
-            {"eil51", "data/eil51.tsp", 426, 51, "small", "51城市實例(近似50城市)"},
-            {"kroA100", "data/kroA100.tsp", 21282, 100, "medium", "100城市Krolak問題A"},
-            {"kroA150", "data/kroA150.tsp", 26524, 150, "large", "150城市Krolak問題A"},
-            {"gr202", "data/gr202.tsp", 40160, 202, "extra_large", "202城市地理實例"}
+            {"eil51", "d:/D_backup/2025/tum/Parallel ACO for TSP/data/eil51.tsp", 426, 51, "small", "51城市實例(近似50城市)"},
+            {"kroA100", "d:/D_backup/2025/tum/Parallel ACO for TSP/data/kroA100.tsp", 21282, 100, "medium", "100城市Krolak問題A"},
+            {"ch150", "d:/D_backup/2025/tum/Parallel ACO for TSP/data/ch150.tsp", 6528, 150, "large", "150城市實例"},
+            {"gr202", "d:/D_backup/2025/tum/Parallel ACO for TSP/data/gr202.tsp", 40160, 202, "extra_large", "202城市地理實例"}
         };
     }
     

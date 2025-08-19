@@ -73,12 +73,7 @@ AcoResults AcoEngine::run() {
         results.iteration_avg_lengths.push_back(iteration_avg);
         results.actual_iterations = iteration + 1;
         
-        // 調試輸出：每回合的關鍵統計數據
-        if (iteration % 10 == 0 || iteration < 5 || iteration == params_.max_iterations - 1) {
-            std::cout << "iter " << iteration << ": iter_min=" << iteration_best 
-                      << "  iter_avg=" << iteration_avg 
-                      << "  global_best=" << global_best_length_ << std::endl;
-        }
+        // Silent execution - no debug output
         
         // Check if we found a new global best
         if (iteration_best < last_best_length) {

@@ -237,7 +237,34 @@ target_include_directories(quick_aco_experiment PRIVATE include)
 # Parallel Diagnostic Test
 add_executable(parallel_diagnostic experiment/parallel_diagnostic.cpp)
 target_link_libraries(parallel_diagnostic aco_lib)
-target_include_directories(parallel_diagnostic PRIVATE include)# Install targets
+target_include_directories(parallel_diagnostic PRIVATE include)
+
+# Comprehensive Ant-Thread Experiment
+add_executable(comprehensive_ant_thread_experiment experiment/comprehensive_ant_thread_experiment.cpp)
+target_link_libraries(comprehensive_ant_thread_experiment aco_lib)
+target_include_directories(comprehensive_ant_thread_experiment PRIVATE include)
+
+# Ant-Thread Scalability Experiment (English version)
+add_executable(ant_thread_scalability_experiment experiment/ant_thread_scalability_experiment.cpp)
+target_link_libraries(ant_thread_scalability_experiment aco_lib)
+target_include_directories(ant_thread_scalability_experiment PRIVATE include)
+
+# Fast Ant-Thread Experiment (optimized for speed)
+add_executable(fast_ant_thread_experiment experiment/fast_ant_thread_experiment.cpp)
+target_link_libraries(fast_ant_thread_experiment aco_lib)
+target_include_directories(fast_ant_thread_experiment PRIVATE include)
+
+# English Fast ACO Experiment (all English, short time budget)
+add_executable(english_fast_aco_experiment experiment/english_fast_aco_experiment.cpp)
+target_link_libraries(english_fast_aco_experiment aco_lib)
+target_include_directories(english_fast_aco_experiment PRIVATE include)
+
+# Four Instances Experiment Runner (comprehensive experiment)
+add_executable(four_instances_experiment_runner experiment/four_instances_experiment_runner.cpp)
+target_link_libraries(four_instances_experiment_runner aco_lib)
+target_include_directories(four_instances_experiment_runner PRIVATE include)
+
+# Install targets
 install(TARGETS aco_lib DESTINATION lib)
 install(DIRECTORY include/ DESTINATION include)
 

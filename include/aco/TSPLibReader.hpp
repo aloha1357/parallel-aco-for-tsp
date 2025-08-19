@@ -48,11 +48,6 @@ private:
     static std::vector<std::pair<double, double>> parseNodeCoordSection(
         const std::vector<std::string>& lines, int start_line, int dimension);
     
-    // 計算歐幾里得距離
-    static double calculateEuclideanDistance(
-        const std::pair<double, double>& p1, 
-        const std::pair<double, double>& p2);
-    
     // 讀取檔案所有行
     static std::vector<std::string> readFileLines(const std::string& filename);
     
