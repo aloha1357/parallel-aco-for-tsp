@@ -7,6 +7,17 @@
 
 A high-performance **Parallel Ant Colony Optimization (ACO)** implementation for solving the **Traveling Salesman Problem (TSP)** using C++17 and OpenMP. This project demonstrates advanced software engineering practices including TDD/BDD, performance optimization, and comprehensive benchmarking.
 
+> ## 🎯 **Quick Start for New Users**
+> 
+> **👉 [Go directly to the User Guide](experiment/USER_GUIDE.md)** for step-by-step instructions!
+> 
+> The User Guide provides:
+> - ✅ **5-minute setup** instructions
+> - 🧪 **Ready-to-run experiments** 
+> - 📊 **Result interpretation** guidance
+> - ⚙️ **Parameter customization** examples
+> - 🔧 **Troubleshooting** solutions
+
 ## 🚀 Key Features
 
 - **🔥 High-Performance Parallel Computing**: OpenMP-based multi-threading with optimized load balancing
@@ -163,6 +174,8 @@ brew install cmake llvm python3
 
 ## 🚀 Quick Start
 
+> 🎯 **New User?** Check out our comprehensive **[User Guide](experiment/USER_GUIDE.md)** for step-by-step instructions and experiment walkthroughs!
+
 ### 1. Clone the Repository
 ```bash
 git clone https://github.com/aloha1357/parallel-aco-for-tsp.git
@@ -181,29 +194,29 @@ cmake .. -DCMAKE_BUILD_TYPE=Release
 cmake --build . --config Release -j8
 ```
 
-### 3. Run Basic Example
+### 3. Run Your First Experiment
 ```bash
-# Run with default parameters
-./aco_main
+# Quick validation (30 seconds)
+./quick_aco_experiment
 
-# Run with specific TSP file
-./aco_main --file ../data/eil51.tsp --threads 4
+# Comprehensive experiment with detailed output (2-3 minutes)
+./english_fast_aco_experiment
 
-# Run comprehensive benchmark
-./comprehensive_experiment_runner
+# Thread scalability analysis (5-10 minutes)
+./ant_thread_scalability_experiment
 ```
 
-### 4. Run Performance Tests
-```bash
-# Quick performance test
-./quick_average_test
+### 4. 📖 Detailed Instructions
+For complete guidance on running experiments, understanding results, and customizing parameters:
 
-# Thread performance comparison  
-./thread_performance_comparison
+**👉 [Go to User Guide](experiment/USER_GUIDE.md)**
 
-# Strategy comparison
-./strategy_comparison_demo
-```
+The User Guide covers:
+- ✅ Step-by-step experiment execution
+- 📊 Result interpretation and analysis  
+- ⚙️ Parameter customization
+- 🔧 Troubleshooting common issues
+- 🎯 Recommended experiment workflows
 
 ## 📁 Project Structure
 
@@ -225,8 +238,15 @@ parallel-aco-for-tsp/
 │   ├── kroA100.tsp            # 100-city problem
 │   └── ...                     # Other test instances
 ├── 📂 build/                   # Build outputs and results
-└── 📂 experiment/              # Experiment scripts and results
+└── 📂 experiment/              # 🧪 **Experiments & User Guide**
+    ├── 📖 USER_GUIDE.md        # 🎯 **Complete Quick Start Guide**
+    ├── 📖 README.md            # Experiment directory overview
+    ├── 🧪 *_experiment.cpp     # Ready-to-run experiments
+    ├── 🐍 *.py                 # Analysis and visualization scripts
+    └── 📂 results/             # Generated charts and reports
 ```
+
+> 💡 **Tip:** All experiment instructions and tutorials are in the [`experiment/`](experiment/) directory!
 
 ## ⚙️ Configuration Options
 
