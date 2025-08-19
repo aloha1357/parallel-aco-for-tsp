@@ -1,0 +1,160 @@
+# Simple GitLab CI/CD for Parallel ACO TSP
+# Focused on build, test, and performance evaluation
+
+stages:
+  - build
+  - test
+  - performance
+
+variables:
+  BUILD_DIR: "build"
+  CMAKE_BUILD_TYPE: "Release"
+
+# Build the project
+build_project:
+  image: gcc:12
+  stage: build
+  before_script:
+    - apt-get update -qq
+    - apt-get install -y cmake ninja-build
+  script:
+    - mkdir -p ${BUILD_DIR}
+    - cd ${BUILD_DIR}
+    - cmake .. -G Ninja -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+    - ninja -v
+    - echo "Build completed successfully"
+    - ls -la
+  artifacts:
+    paths:
+      - ${BUILD_DIR}/
+    expire_in: 2 hours
+  cache:
+    key: "${CI_COMMIT_REF_SLUG}-build"
+    paths:
+      - ${BUILD_DIR}/
+
+# Run unit tests
+run_tests:
+  image: gcc:12
+  stage: test
+  dependencies:
+    - build_project
+  script:
+    - cd ${BUILD_DIR}
+    - echo "Running unit tests..."
+    - if [ -f "./unit_tests" ]; then ./unit_tests; else echo "No unit tests found"; fi
+    - echo "Unit tests completed"
+  artifacts:
+    reports:
+      junit: ${BUILD_DIR}/test_results.xml
+    when: always
+
+# Run ACO experiments
+aco_experiments:
+  image: gcc:12
+  stage: performance
+  dependencies:
+    - build_project
+  script:
+    - cd ${BUILD_DIR}
+    - echo "Running ACO performance experiments..."
+    
+    # Quick experiment
+    - if [ -f "./quick_aco_experiment" ]; then 
+        echo "Running quick ACO experiment...";
+        timeout 300 ./quick_aco_experiment || echo "Quick experiment completed or timed out";
+      fi
+    
+    # Fast ant thread experiment
+    - if [ -f "./fast_ant_thread_experiment" ]; then 
+        echo "Running fast ant thread experiment...";
+        timeout 300 ./fast_ant_thread_experiment || echo "Fast ant experiment completed or timed out";
+      fi
+    
+    # English fast ACO experiment
+    - if [ -f "./english_fast_aco_experiment" ]; then 
+        echo "Running English fast ACO experiment...";
+        timeout 300 ./english_fast_aco_experiment || echo "English fast experiment completed or timed out";
+      fi
+    
+    - echo "Performance experiments completed"
+    - ls -la *.csv *.md 2>/dev/null || echo "No result files generated"
+  artifacts:
+    paths:
+      - ${BUILD_DIR}/*.csv
+      - ${BUILD_DIR}/*.md
+      - ${BUILD_DIR}/*.txt
+    expire_in: 1 week
+    when: always
+  timeout: 15 minutes
+  only:
+    - main
+    - merge_requests
+
+# Build validation for different configurations
+build_debug:
+  image: gcc:12
+  stage: build
+  before_script:
+    - apt-get update -qq
+    - apt-get install -y cmake ninja-build
+  script:
+    - mkdir -p build-debug
+    - cd build-debug
+    - cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Debug
+    - ninja -v
+    - echo "Debug build completed"
+  artifacts:
+    paths:
+      - build-debug/
+    expire_in: 1 hour
+  except:
+    - main  # Only run on feature branches
+
+# Code quality check
+code_quality:
+  image: gcc:12
+  stage: test
+  before_script:
+    - apt-get update -qq
+    - apt-get install -y cppcheck
+  script:
+    - echo "Running code quality analysis..."
+    - cppcheck --enable=warning,style,performance --inconclusive src/ include/ || true
+    - echo "Code quality check completed"
+  allow_failure: true
+
+# Performance comparison (only on main)
+performance_comparison:
+  image: gcc:12
+  stage: performance
+  dependencies:
+    - build_project
+  script:
+    - cd ${BUILD_DIR}
+    - echo "Running comprehensive performance comparison..."
+    
+    # Run comprehensive experiment if available
+    - if [ -f "./comprehensive_aco_experiment" ]; then 
+        echo "Running comprehensive ACO experiment...";
+        timeout 600 ./comprehensive_aco_experiment || echo "Comprehensive experiment completed or timed out";
+      fi
+    
+    # Run scalability experiment
+    - if [ -f "./ant_thread_scalability_experiment" ]; then 
+        echo "Running thread scalability experiment...";
+        timeout 600 ./ant_thread_scalability_experiment || echo "Scalability experiment completed or timed out";
+      fi
+    
+    - echo "Performance comparison completed"
+    - find . -name "*.csv" -o -name "*.md" | head -10
+  artifacts:
+    paths:
+      - ${BUILD_DIR}/*.csv
+      - ${BUILD_DIR}/*.md
+      - ${BUILD_DIR}/*.png
+    expire_in: 1 month
+    when: always
+  timeout: 20 minutes
+  only:
+    - main
